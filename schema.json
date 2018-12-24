@@ -1,0 +1,57 @@
+{
+    "fields": [
+        {
+            "name": "id",
+            "type": "integer",
+            "format": "default"
+        },
+        {
+            "name": "first_name",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "last_name",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "email_address",
+            "type": "string",
+            "format": "email"
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "phone",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "street_address",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "city",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "postal_code",
+            "type": "string",
+            "format": "default"
+        },
+        {
+            "name": "country",
+            "type": "string",
+            "format": "default"
+        }
+    ],
+    "missingValues": [
+        ""
+    ]
+}
