@@ -18,13 +18,13 @@ class Etl {
 	 * @return {Etl} return the object itself
 	 */
 	addExtractors(extractor$) {
-		// make sure that the extractor passed in is valid
+		// make sure that the extractor passed in is instance of Observable
 		if (!(extractor$ instanceof Observable)) {
 			// reset Etl's state
 			this.reset();
 			return console.error("Error: extractor function invalid\n See docs for more details.\n");
 		} else {
-			// push extractor function to this.extractors
+			// save extractor$ to ETL's state
 			this.extractor$ = extractor$;
 		}
 		return this;
@@ -33,14 +33,14 @@ class Etl {
 
 	/**********	method to add transformers **********/
 	addTransformers(...transformers) {
-		// make sure that the transformers passed in are of class Transformers
+		// make sure that the transformers passed in are instances of Transformers
 		for (let i = 0; i < transformers.length; i += 1) {
 			if (!(transformers[i] instanceof Transformers)) {
 				// reset Etl's state
 				this.reset();
 				return console.error("Error: transformer functions must be of class 'Transformers'\n See docs for more details.\n")
 			} else {
-				// push transformer function to this.transformers
+				// push transformer to state
 				this.transformers.push(transformers[i]);
 			}
 		}
@@ -89,9 +89,10 @@ class Etl {
 
 	/********** method to invoke the observer **********/
 	start() {
-		if (this.observable === null) 
+		// checks to make sure everything has been combined before starting
+		if (this.observable$ === null) 
 			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n')
-		return this.observable.subscribe();
+		return this.observable$.subscribe();
 	}
 
 

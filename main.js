@@ -2,8 +2,13 @@ const { Observable, Subject, of, from, fromEvent } = require('rxjs');
 const { create, concat, map, takeUntil } = require('rxjs/operators');
 const readline = require('readline');
 
-
+// TESTING LIBRARY 
 const testEtl = require('./Etl');
+const extract 
+
+
+
+//******************** */
  
 const csv = require('csv-parser');
 
@@ -86,10 +91,11 @@ const storeInMongo = (data) => {
 	return collection.insertOne(data);
 };
 
-const storeInPg = async (data) => {
-	const query = 'INSERT INTO test ("full_name", "email_address", "password", "phone", "street_address", "city", "postal_code", "country") VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
-	const values = [data['full_name'], data['email_address'], data['password'], data['phone'], data['street_address'], data['city'], data['postal_code'], data['country']];
-	return pgClient.query(query, values);
+const storeInPg = (data) => {
+	// const query = 'INSERT INTO test ("full_name", "email_address", "password", "phone", "street_address", "city", "postal_code", "country") VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
+	// const values = [data['full_name'], data['email_address'], data['password'], data['phone'], data['street_address'], data['city'], data['postal_code'], data['country']];
+	// return pgClient.query(query, values);
+	return pgClient.query(copyFrom('COPY test (id, first_name, last_name, email_address, password, phone, street_address, city, postal_code, country) FROM STDIN CSV HEADER'));
 };
 
 // returns changed entry
@@ -123,7 +129,7 @@ const csvToMongo = async (req, res, next) => {
 
 const csvToPg = (req, res, next) => {
 	const fileReader$ = extractCsv(res.locals.type, res.locals.filename);
-	res.locals.data = transformObservable(fileReader$, combineNames, storeInPg);
+	res.locals.data = transformObservable(fileReader$, combineNames).pipe(storeInPg);
 	return next();
 };
 
@@ -151,6 +157,30 @@ app.get('/etlPg', (req, res) => {
 	
 	res.sendStatus(200);
 });
+
+
+
+
+
+app.get('/test', (req, res) => {
+
+
+	new testEtl()
+		.addExtractors()
+		.addTransformers()
+		.addLoaders()
+		.combine()
+		.start()
+
+		 
+
+
+
+	res.sendStatus(200);
+});
+
+
+
 
 
 app.listen(`${PORT}`, () => {
