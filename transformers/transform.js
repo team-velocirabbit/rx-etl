@@ -2,6 +2,7 @@ const { Observable } = require('rxjs');
 
 const transform = {};
 
+
 transform.combineNames = (data) => {
   const nd = {};
   nd.id = data.id * 1;

@@ -23,20 +23,27 @@ load.toXML = () => {
   @param:
 * @return: 
 */
+
+// connectionString, collectionName 
+
 load.toMongoDB = (row, connectionString, collectionName) => { // Do we need to add a collection name field to the UI?
+
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
-    if (err) console.log(err);
+    if (err) console.error(err);
     // Handling a successful database connection
-    else console.log('Connected successfully to server');
+    // else console.log('Connected successfully to server');
+    
     // Creating a new collection in the Mongo database
     const newCollection = db.collection(collectionName);
     // Inserting a new row into the Mongo collection
     newCollection.insertOne(row);
     // Close the Mongo connection
-    db.close();
+    // db.close();
   });
+  
+  return;
 };
 
 load.toPostgres = () => {
