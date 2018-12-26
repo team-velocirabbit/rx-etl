@@ -8,7 +8,7 @@ const load = {};
 /**
 * SUMMARY: This method exports transformed data locally to a CSV file
 * @param: { }
-  @param: {String} A file path and name for the exported file
+  @param: {String} A file path and name for the exported CSV file
 * @return: { }
 */
 load.toCSV = (row, outputFile) => {
