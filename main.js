@@ -4,12 +4,16 @@ const readline = require('readline');
 
 // TESTING LIBRARY 
 const testEtl = require('./Etl');
-const extract 
-
+const extract = require('./extractors/extract');
+const transform = require('./transformers/transform');
+const load = require('./loaders/load');
 
 
 //******************** */
  
+const JSONStream = require('JSONStream');
+
+
 const csv = require('csv-parser');
 
 const express = require('express');
@@ -27,12 +31,6 @@ pgClient.connect();
 
 const MongoClient = mongodb.MongoClient;
 const Collection = mongodb.Collection;
-
-const Json2csvTransform = require('json2csv').Transform;
-const options = { highWaterMark: 16384, encoding: 'utf-8'};
-const fields = ['id', 'first_name', 'last_name', 'email_address', 'password', 'phone', 'street_address', 'city', 'postal_code', 'country'];
-
-const jparser = new Json2csvTransform({ fields }, options);
 
 let collection;
 let csvCollection;
@@ -115,8 +113,9 @@ const combineNames = (data) => {
 };
 
 const jsonToCsv = (req, res, next) => {
-	res.locals.filename = fs.createReadStream('MOCK_DATA.json', { encoding: 'utf-8' }).pipe(jparser).pipe(csv());
-	res.locals.type = 'json';
+	// res.locals.filename = fs.createReadStream('MOCK_DATA.json', { encoding: 'utf-8' });
+	res.locals.filename = fs.createReadStream('MOCK_DATA.json', { flags: 'r', encoding: 'utf-8' }).pipe(JSONStream.parse('*'));
+	res.locals.type = 'json';	
 	collection = jsonCollection;
 	return next();
 };
@@ -165,22 +164,22 @@ app.get('/etlPg', (req, res) => {
 app.get('/test', (req, res) => {
 
 
+	// new testEtl()
+	// 	.addExtractors(extract.fromCSV('MOCK_DATA.csv'))
+	// 	.addTransformers(combineNames)
+	// 	.addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+	// 	.combine()																											
+	// 	.start()
+
 	new testEtl()
-		.addExtractors()
-		.addTransformers()
-		.addLoaders()
+		.simple('MOCK_DATA.csv', combineNames, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.combine()
 		.start()
-
-		 
 
 
 
 	res.sendStatus(200);
 });
-
-
-
 
 
 app.listen(`${PORT}`, () => {
