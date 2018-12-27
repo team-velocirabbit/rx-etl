@@ -1,27 +1,37 @@
 const { Observable } = require('rxjs');
 const { MongoClient } = require('mongodb');
+const fs = require('file-system');
+var csvWriter = require('csv-write-stream')
 
 const load = {};
 
-load.toCSV = () => {
-
+/**
+* SUMMARY: This method exports transformed data locally to a CSV file
+* @param: { }
+  @param: {String} A file path and name for the exported CSV file
+* @return: { }
+*/
+load.toCSV = (row, outputFile) => {
+  const writer = csvWriter();
+  writer.pipe(fs.createWriteStream(outputFile));
+  writer.write(row);
+  writer.end();
 };
 
 load.toJSON = () => {
-    
+
 };
 
 load.toXML = () => {
-    
+
 };
 
 /**
-* SUMMARY: This method imports a CSV file from the file system using
-* file path parameter and processes the file
-* @param: 
-  @param:
-  @param:
-* @return: 
+* SUMMARY: This method exports transformed data to a Mongo database
+* @param: { }
+  @param: {String} A connection string to the Mongo database
+  @param: {String} The name of the desired collection
+* @return: { }
 */
 
 // connectionString, collectionName 
