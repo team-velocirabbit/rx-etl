@@ -36,21 +36,18 @@ load.toXML = () => {
 
 // connectionString, collectionName 
 
-load.toMongoDB = (row, connectionString, collectionName) => { // Do we need to add a collection name field to the UI?
+load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
 
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
     if (err) console.error(err);
-    // Handling a successful database connection
-    // else console.log('Connected successfully to server');
     
     // Creating a new collection in the Mongo database
     const newCollection = db.collection(collectionName);
+
     // Inserting a new row into the Mongo collection
-    newCollection.insertOne(row);
-    // Close the Mongo connection
-    // db.close();
+    newCollection.insert(data);
   });
   
   return;

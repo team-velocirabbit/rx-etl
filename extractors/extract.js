@@ -1,5 +1,4 @@
 const { Observable } = require('rxjs');
-
 const fileExtension = require('file-extension');
 const csv = require('csv-parser');
 const fs = require('file-system');
@@ -54,7 +53,7 @@ extract.fromJSON = (filePath) => {
           console.dir(result);
           console.log('Done');
       });
-    );
+    });
     data.on('data', chunk => observer.next(chunk));
     data.on('end', () => observer.complete());
 

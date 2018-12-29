@@ -1,12 +1,20 @@
 const { Observable } = require('rxjs');
-const { switchMap, map } = require('rxjs/operators');
+const { count, tap, switchMap, map, bufferCount } = require('rxjs/operators');
 const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
 
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
 
+/** 
+ * Class that stores the extractor, transformers, and loader, 
+ * and combines and executes the ETL process through streaming, using rxjs Observables
+ * */
 class Etl {
+
+	/**
+	 * initiates and stores initial values of the state that stores all contents of ETL
+	 */
 	constructor() {
 		this.extractor$ = null;
 		this.transformers = [];
@@ -14,56 +22,71 @@ class Etl {
 		this.observable$ = null;
 		this.connectionString = '';
 		this.collectionName = '';
+		this.test = ''
 	}
 
-	/** 
-   * Collects extractors
+	/**
+	 * Collects extractor$ and adds it in Etl's state
 	 * 
-	 * Stores, inside of the Etl object, the extractor observable that is passed in
-	 * 
-	 * @param {Observable} extractor$ observable that extracts data from source
-	 * @return {Etl} return the object itself
+	 * @param {Observable} extractor$ - An observable that reads and streams the data from input source
+	 * @returns {this}
 	 */
 	addExtractors(extractor$) {
-		// make sure that the extractor passed in is instance of Observable
+		// validate extractor$. If not valid, then reset Etl's state and throw error
 		if (!(extractor$ instanceof Observable)) {
-			// reset Etl's state
 			this.reset();
 			return console.error("Error: extractor function invalid\n See docs for more details.\n");
 		} else {
-			// save extractor$ to ETL's state
 			this.extractor$ = extractor$;
 		}
 		return this;
 	}
 
-
-	/**********	method to add transformers **********/
+	/**
+	 * Collects transformer(s) and stores it in the state of Etl
+	 * 
+	 * @param {function} transformers - One (or many) functions that transforms the source data
+	 * @returns {this}
+	 */
 	addTransformers(...transformers) {
-		// make sure that the transformers passed in are instances of Transformers
+		// validate each function in transformers. If not valid, then reset Etl's state and throw error
 		for (let i = 0; i < transformers.length; i += 1) {
 			if (!(transformers[i] instanceof Function)) {
-				// reset Etl's state
 				this.reset();
 				return console.error("Error: transformer functions must be of class 'Transformers'\n See docs for more details.\n")
 			} else {
-				// push transformer to state
 				this.transformers.push(transformers[i]);
 			}
 		}
 		return this;
 	}
 
-
-	/********** method to add loaders **********/
-	addLoaders(loader, connectionString, collectionName) {
-		// make sure that the loaders passed in are of class Loaders
+	/**
+	 * Collects loader function and database connection strings and stores it in the state of Etl
+	 * 
+	 * @param {function} loader - One (or many) functions that transforms the source data
+	 * @param {string} connectionString - The connection string to the load database (MongoDB or Postgres)
+	 * @param {string} collectionName - The collection name (optional), 'etl_output' by default
+	 * @returns {this}
+	 */
+	addLoaders(loader, connectionString, collectionName = 'etl_output') {
+		// parse the loader to function to check if loader is to a flat file or db
+		let type = '';
+		// validate params. If not valid, then reset the Etl's state and throw error
 		if (!(loader instanceof Function)) {
-			// reset Etl's state
 			this.reset();
 			return console.error("Error: loader functions must be of class 'Loaders'\n See docs for more details.\n")
 		} else {
-			// push loader function to this.loaders
+			// get either CSV, XML, JSON, MONGODB, POSTGRES from name of function
+			type = loader.name.substring(2).toLowerCase();
+		}
+		// makes sure that connectionString and collectionName is provided if loader is to a database
+		if ((type === 'mongo' || type === 'postgres') && 
+			((typeof connectionString !== 'string' || connectionString.length === 0) || 
+			(typeof collectionName !== 'string' || collectionName.length === 0))) {
+				this.reset();
+				return console.error("Error: database loaders must provide connection string AND collection / table name in the parameter!\n");
+		} else {
 			this.loader = loader;
 			this.connectionString = connectionString;
 			this.collectionName = collectionName;
@@ -71,40 +94,79 @@ class Etl {
 		return this;
 	}
 
-
-	/********** method to wrap in observer **********/
+	/**
+	 * Combines the extractor$, transformers, and loader in the state by piping each to one another
+	 * and stores an Observable (containing the entire ETL process) in the state
+	 * 
+	 * @returns {this}
+	 */
 	combine() {
-		// if previous etl process exists, throw error
+		// ensure that a previous Etl process (an Observable) does not exist, and if so, throw an error
 		if (this.observable$ !== null) 
-			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n')
-
+			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
 		// create a new observable from the extractor$ observable, and complete the extractor$ observable
 		this.observable$ = this.extractor$.pipe(switchMap(data => Observable.create(observer => {
 			observer.next(data);
 		})));
-
-		// pipe the observable with transformers
+		// pipe each event through a transformer function
 		for (let i = 0; i < this.transformers.length; i += 1) {
 			this.observable$ = this.observable$.pipe(map(data => this.transformers[i](data)));
 		}
-
-		// pipe the observable to the loader function
+		// pipe each event to the loader function
 		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
+		
+
+		/* UNDER CONSTRUCTION --> WORK ON BULK INSERTING */
+		// const totalDoc$= this.observable$.pipe(count());
+		// let loader = this.loader;
+
+		// let data = [];
+		// const counter = 0;
+		// totalDoc$.subscribe(c => console.log('hiiii'));
+
+		// this.observable$ = this.observable$
+		// 	.pipe(map(d => {
+		// 		counter += 1;
+		// 		if (data.length === 2) {
+		// 			data.push(d);
+		// 			console.log('going to insert now');
+		// 			this.loader(data, this.connectionString, this.collectionName);
+		// 			data = [];
+		// 			return;
+		// 		} else if (data.length !== 0 && count === counter) {
+		// 			this.loader(data, this.connectionString, this.collectionName);
+		// 			data = [];
+		// 			return;
+		// 		} else {
+		// 			data.push(d);
+		// 			return;
+		// 		}
+		// 	}))
 
 		return this;
 	}
 
-
-	/********** method to invoke the observer **********/
+	/**
+	 * Subscribes to the Observable, in Etl's state, encapsulating the entire Etl process
+	 * 
+	 * @returns {string} message - send back a message declaring success or failure
+	 */
 	start() {
-		// checks to make sure everything has been combined before starting
 		if (this.observable$ === null) 
-			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n')
-		return this.observable$.subscribe();
+			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
+		let message = '';
+		this.observable$.subscribe(
+			null, 
+			() => console.error('Error: unable to start etl process. Use the .reset() method and try again.'),
+			null);
+		return 'Successfully Completed';
 	}
 
-
-	/********** method to clear state in case of error **********/
+	/**
+	 * Resets the Etl's state to default values
+	 * 
+	 * @returns {this}
+	 */	
 	reset() {
 		this.extractor$ = null;
 		this.transformers = [];
@@ -113,20 +175,22 @@ class Etl {
 		return this;
 	}
 
-
-
-	/* simple shortcut method for GUI interaction */
+	/**
+	 * Simple method that encapsulates the three different methods to add extractor$, transformers, and loader
+	 * into a simple function that adds appropriate functions and methods to Etl's state
+	 * 
+	 * @returns {this}
+	 */
 	simple(extractString, callback, loadString, collectionName = 'etl_output') {
-
-		// check for valid input
+		// validate input
 		if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0) 
-			return console.error('Error: first parameter of simple() must be a string and cannot be empty!')
+			return console.error('Error: first parameter of simple() must be a string and cannot be empty!');
 		if (callback === undefined || typeof callback !== 'function') 
-			return console.error('Error: second parameter of simple() must be a function and cannot be empty!')
+			return console.error('Error: second parameter of simple() must be a function and cannot be empty!');
 		if (loadString === undefined || typeof loadString !== 'string' || loadString.length === 0) 
-			return console.error('Error: third parameter of simple() must be a string and cannot be empty!')
+			return console.error('Error: third parameter of simple() must be a string and cannot be empty!');
 
-		// add callback to state
+		// add valid callbacks to the list of transformers in state
 		this.transformers.push(callback);
 
 		/* EXTRACT: check extractString to choose appropriate extractor */
@@ -150,7 +214,6 @@ class Etl {
 		}
 		return this;
 	}
-
 }
 
 module.exports = Etl;

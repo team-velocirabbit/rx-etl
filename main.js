@@ -171,12 +171,10 @@ app.get('/test', (req, res) => {
 	// 	.combine()																											
 	// 	.start()
 
-	new testEtl()
+	const etl = new testEtl()
 		.simple('MOCK_DATA.csv', combineNames, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.combine()
 		.start()
-
-
 
 	res.sendStatus(200);
 });
