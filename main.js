@@ -113,7 +113,6 @@ const combineNames = (data) => {
 };
 
 const jsonToCsv = (req, res, next) => {
-	// res.locals.filename = fs.createReadStream('MOCK_DATA.json', { encoding: 'utf-8' });
 	res.locals.filename = fs.createReadStream('MOCK_DATA.json', { flags: 'r', encoding: 'utf-8' }).pipe(JSONStream.parse('*'));
 	res.locals.type = 'json';	
 	collection = jsonCollection;
