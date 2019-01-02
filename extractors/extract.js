@@ -8,11 +8,11 @@ const xml2js = require('xml2js');
 const extract = {};
 
 /**
-* SUMMARY: This method imports a CSV file from the file system using
-* file path parameter and processes the file
-* @param: {String} A path to the input file
-* @return: {Observable} An observable containing the parsed CSV data
-*/
+ * Imports a CSV file from the file system using file path parameter and processes the file
+ *
+ * @param {string} - a path to the input file
+ * @returns {Observable} - an observable containing the parsed CSV data
+ */
 extract.fromCSV = (filePath) => {
   // Check if a file path was passed into the function
   if (filePath === undefined) return console.error('ERROR: A file path does not appear to have been passed.\n');
@@ -32,11 +32,11 @@ extract.fromCSV = (filePath) => {
 };
 
 /**
-* SUMMARY: This method imports a JSON file from the file system using
-* file path parameter and processes the file
-* @param: {String} A path to the input file
-* @return: {Observable} An observable containing the parsed JSON data
-*/
+ * Import a JSON file from the file system using file path parameter and processes the file
+ *
+ * @param {string} - a path to the input file
+ * @return {Observable} - an observable containing the parsed JSON data
+ */
 extract.fromJSON = (filePath) => {
   // Check if a file path was passed into the function
   if (filePath === undefined) return console.error('ERROR: A file path does not appear to have been passed.\n');
@@ -63,11 +63,11 @@ extract.fromJSON = (filePath) => {
 };
 
 /**
-* SUMMARY: This method imports a XML file from the file system using
-* file path parameter and processes the file
-* @param: {String} A path to the input file
-* @return: {Observable} An observable containing the parsed XML data
-*/
+ * Imports a XML file from the file system using file path parameter and processes the file
+ *
+ * @param {string} - a path to the input file
+ * @return {Observable} - an observable containing the parsed XML data
+ */
 extract.fromXML = () => {
   // Check if a file path was passed into the function
   if (filePath === undefined) return console.error('ERROR: A file path does not appear to have been passed.\n');
@@ -86,10 +86,22 @@ extract.fromXML = () => {
   });
 };
 
+/**
+ * Description
+ *
+ * @param {} - 
+ * @return {} - 
+ */
 extract.fromMongoDB = () => {
 
 }
 
+/**
+ * Description
+ *
+ * @param {} - 
+ * @return {} - 
+ */
 extract.fromPostgres = () => {
   
 }
