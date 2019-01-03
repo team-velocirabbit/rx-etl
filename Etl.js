@@ -2,13 +2,10 @@ const { Observable } = require('rxjs');
 const { count, tap, switchMap, map, bufferCount } = require('rxjs/operators');
 const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
-const mongodb = require('mongodb');
-const MongoClient = mongodb.MongoClient;
+const { MongoClient } = require('mongodb');
 
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
-
-let collection;
 
 /** 
  * Class that stores the extractor, transformers, and loader, 
@@ -26,8 +23,6 @@ class Etl {
 		this.observable$ = null;
 		this.connectionString = '';
 		this.collectionName = '';
-		this.db = null;
-		this.collection = null;
 		this.test = ''
 	}
 
@@ -107,9 +102,6 @@ class Etl {
 	 * @returns {this}
 	 */
 	combine() {
-
-console.log('combining')
-
 		// ensure that a previous Etl process (an Observable) does not exist, and if so, throw an error
 		if (this.observable$ !== null) 
 			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
@@ -123,7 +115,7 @@ console.log('combining')
 		}
 
 		// pipe each event to the loader function
-		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.collection)));
+		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
 		
 
 		/* UNDER CONSTRUCTION --> WORK ON BULK INSERTING */
@@ -162,22 +154,6 @@ console.log('combining')
 	 * @returns {string} message - send back a message declaring success or failure
 	 */
 	start() {
-
-		// establish connection to database
-		MongoClient.connect(this.connectionString, (err, database) => {
-			if (err) return console.error('Error: Could not connect to database with provided uri connection string.');			
-			this.db = database;
-			this.collection = database.collection((this.collectionName !== '') ? this.collectionName : 'etl_output', (err, col) => {
-				if (err) return console.error('Error: Could not connect to database collection.');	
-				console.log('Connected to database');
-			});
-		});
-
-	console.log(this.collection)
-
-
-
-
 		if (this.observable$ === null) 
 			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
 		let message = '';
@@ -185,7 +161,8 @@ console.log('combining')
 		this.observable$.subscribe(
 			null, 
 			() => console.error('Error: unable to start etl process. Use the .reset() method and try again.'),
-			() => this.db.close());
+			null
+		);
 		return 'Successfully Completed';
 	}
 

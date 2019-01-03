@@ -169,8 +169,7 @@ app.get('/test', (req, res) => {
 	// 	.addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 	// 	.combine()																											
 	// 	.start()
-console.log('in here');
-
+	
 	const etl = new testEtl()
 		.simple('MOCK_DATA.csv', combineNames, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.combine()
