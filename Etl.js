@@ -2,6 +2,7 @@ const { Observable } = require('rxjs');
 const { count, tap, switchMap, map, bufferCount } = require('rxjs/operators');
 const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
+const { MongoClient } = require('mongodb');
 
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
@@ -22,6 +23,7 @@ class Etl {
 		this.observable$ = null;
 		this.connectionString = '';
 		this.collectionName = '';
+		this.db = null;
 		this.test = ''
 	}
 
@@ -112,8 +114,15 @@ class Etl {
 		for (let i = 0; i < this.transformers.length; i += 1) {
 			this.observable$ = this.observable$.pipe(map(data => this.transformers[i](data)));
 		}
+
+		// establish connection to database
+		MongoClient.connect(this.connectionString, (err, database) => {
+			if (err) return console.error('Error: Could not connect to database with provided uri connection string.');
+			this.db = database.collection((this.collectionName !== '') ? this.collectionName : 'etl_output')
+		});
+
 		// pipe each event to the loader function
-		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
+		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.db)));
 		
 
 		/* UNDER CONSTRUCTION --> WORK ON BULK INSERTING */
