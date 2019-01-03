@@ -2,10 +2,13 @@ const { Observable } = require('rxjs');
 const { count, tap, switchMap, map, bufferCount } = require('rxjs/operators');
 const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
-const { MongoClient } = require('mongodb');
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
 
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
+
+let collection;
 
 /** 
  * Class that stores the extractor, transformers, and loader, 
@@ -104,6 +107,9 @@ class Etl {
 	 * @returns {this}
 	 */
 	combine() {
+
+console.log('combining')
+
 		// ensure that a previous Etl process (an Observable) does not exist, and if so, throw an error
 		if (this.observable$ !== null) 
 			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
@@ -115,19 +121,6 @@ class Etl {
 		for (let i = 0; i < this.transformers.length; i += 1) {
 			this.observable$ = this.observable$.pipe(map(data => this.transformers[i](data)));
 		}
-
-		// establish connection to database
-		MongoClient.connect(this.connectionString, (err, database) => {
-			if (err) return console.error('Error: Could not connect to database with provided uri connection string.');			
-			this.db = database;
-			database.collection((this.collectionName !== '') ? this.collectionName : 'etl_output', (err, col) => {
-				if (err) return console.error('Error: Could not connect to database collection.');	
-				console.log('Connected to database');
-				this.collection = col;
-				return;
-			});
-			return;
-		});
 
 		// pipe each event to the loader function
 		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.collection)));
@@ -169,6 +162,22 @@ class Etl {
 	 * @returns {string} message - send back a message declaring success or failure
 	 */
 	start() {
+
+		// establish connection to database
+		MongoClient.connect(this.connectionString, (err, database) => {
+			if (err) return console.error('Error: Could not connect to database with provided uri connection string.');			
+			this.db = database;
+			this.collection = database.collection((this.collectionName !== '') ? this.collectionName : 'etl_output', (err, col) => {
+				if (err) return console.error('Error: Could not connect to database collection.');	
+				console.log('Connected to database');
+			});
+		});
+
+	console.log(this.collection)
+
+
+
+
 		if (this.observable$ === null) 
 			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
 		let message = '';
