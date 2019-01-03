@@ -24,6 +24,7 @@ class Etl {
 		this.connectionString = '';
 		this.collectionName = '';
 		this.db = null;
+		this.collection = null;
 		this.test = ''
 	}
 
@@ -117,12 +118,19 @@ class Etl {
 
 		// establish connection to database
 		MongoClient.connect(this.connectionString, (err, database) => {
-			if (err) return console.error('Error: Could not connect to database with provided uri connection string.');
-			this.db = database.collection((this.collectionName !== '') ? this.collectionName : 'etl_output')
+			if (err) return console.error('Error: Could not connect to database with provided uri connection string.');			
+			this.db = database;
+			database.collection((this.collectionName !== '') ? this.collectionName : 'etl_output', (err, col) => {
+				if (err) return console.error('Error: Could not connect to database collection.');	
+				console.log('Connected to database');
+				this.collection = col;
+				return;
+			});
+			return;
 		});
 
 		// pipe each event to the loader function
-		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.db)));
+		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.collection)));
 		
 
 		/* UNDER CONSTRUCTION --> WORK ON BULK INSERTING */
@@ -164,10 +172,11 @@ class Etl {
 		if (this.observable$ === null) 
 			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
 		let message = '';
+		// close the database connection upon completion, return error if error is thrown
 		this.observable$.subscribe(
 			null, 
 			() => console.error('Error: unable to start etl process. Use the .reset() method and try again.'),
-			null);
+			() => this.db.close());
 		return 'Successfully Completed';
 	}
 

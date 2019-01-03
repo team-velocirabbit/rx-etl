@@ -37,10 +37,8 @@ load.toXML = () => {
  */
 
 load.toMongoDB = (data, newCollection) => { // Do we need to add a collection name field to the UI?
-
   // Inserting a new row into the Mongo collection
   newCollection.insert(data);
-
   return;
 };
 
