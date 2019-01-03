@@ -42,7 +42,7 @@ load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
-    if (err) console.error(err);
+    if (err) return console.error(err);
     
     // Creating a new collection in the Mongo database
     const newCollection = db.collection(collectionName);
