@@ -3,7 +3,7 @@ const { count, tap, switchMap, flatMap, map, bufferCount } = require('rxjs/opera
 const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
 const { MongoClient } = require('mongodb');
-
+const { invert } = require('underscore');
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
 
@@ -22,7 +22,9 @@ class Etl {
 		this.observable$ = null;
 		this.connectionString = '';
 		this.collectionName = '';
-		this.test = ''
+		this.outputFilename = '';
+		this.test = '',
+		this.type = ''
 	}
 
 	/**
@@ -72,11 +74,11 @@ class Etl {
 	 * Collects loader function and database connection strings and stores it in the state of Etl
 	 * 
 	 * @param {function} loader - One (or many) functions that transforms the source data
-	 * @param {string} connectionString - The connection string to the load database (MongoDB or Postgres)
+	 * @param {string} connectStrOrFilename - connect string to the load db (Mongo or Postgres) OR filename if loading to flatfile
 	 * @param {string} collectionName - The collection name (optional), 'etl_output' by default
 	 * @returns {this}
 	 */
-	addLoaders(loader, connectionString, collectionName = 'etl_output') {
+	addLoaders(loader, connectStrOrFilename, collectionName = 'etl_output') {
 		// parse the loader to function to check if loader is to a flat file or db
 		let type = '';
 		// validate params. If not valid, then reset the Etl's state and throw error
@@ -85,19 +87,33 @@ class Etl {
 			return console.error("Error: loader functions must be of class 'Loaders'\n See docs for more details.\n")
 		} else {
 			// get either CSV, XML, JSON, MONGODB, POSTGRES from name of function
-			type = loader.name.substring(2).toLowerCase();
+			type = invert(load)[loader].substring(2).toLowerCase();
 		}
+
 		// makes sure that connectionString and collectionName is provided if loader is to a database
-		if ((type === 'mongo' || type === 'postgres') && 
-			((typeof connectionString !== 'string' || connectionString.length === 0) || 
+		if ((type === 'mongodb' || type === 'postgres') && 
+			((typeof connectStrOrFilename !== 'string' || connectStrOrFilename.length === 0) || 
 			(typeof collectionName !== 'string' || collectionName.length === 0))) {
 				this.reset();
 				return console.error("Error: database loaders must provide connection string AND collection / table name in the parameter!\n");
-		} else {
+		} else if (type === 'mongodb' || type === 'postgres') {
+			this.type = 'db'
 			this.loader = loader;
-			this.connectionString = connectionString;
+			this.connectionString = connectStrOrFilename;
 			this.collectionName = collectionName;
+		} 
+
+		// make sure filename is provided if loading to flat file
+		if ((type === 'csv' || type === 'xml' || type === 'json') && 
+			(typeof connectStrOrFilename !== 'string' ) ) {
+				this.reset();
+				return console.error("Error: flatfile loaders must provide output filename as the second argument!\n");
+		} else if (type === 'csv' || type === 'xml' || type === 'json') {
+			this.type = 'flatfile';
+			this.loader = loader;
+			this.outputFilename = connectStrOrFilename ? connectStrOrFilename : 'etl_output';
 		}
+
 		return this;
 	}
 
@@ -123,9 +139,13 @@ class Etl {
 			}));
 		}
 
-		// pipe each event to the loader function
-		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
-
+		// check if loader type is flatfile or db and pipe each event through the loader function
+		if (this.type === 'flatfile') {
+			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.outputFilename)));
+		} else if (this.type === 'db') {
+			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
+		}
+			
 		return this;
 	}
 
@@ -139,9 +159,9 @@ class Etl {
 			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
 		let message = '';
 		// close the database connection upon completion, return error if error is thrown
-		this.observable$.subscribe(
+		this.observable$.subscribe(	
 			null, 
-			() => console.error('Error: unable to start etl process. Use the .reset() method and try again.'),
+			(err) => console.error('Error: unable to start etl process.\n', err),
 			null
 		);
 		return 'Successfully Completed';
