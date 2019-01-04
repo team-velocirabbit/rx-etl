@@ -38,19 +38,17 @@ load.toXML = () => {
  */
 
 load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
-
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
     if (err) return console.error(err);
-    
     // Creating a new collection in the Mongo database
-    const newCollection = db.collection(collectionName);
-
-    // Inserting a new row into the Mongo collection
-    newCollection.insert(data);
+    let bulk = db.collection(collectionName).initializeOrderedBulkOp();
+    // insert each data row into bulk
+    data.forEach(d => bulk.insert(d));
+    // bulk insert to database
+    bulk.execute();
   });
-  
   return;
 };
 

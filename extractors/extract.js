@@ -25,6 +25,7 @@ extract.fromCSV = (filePath) => {
     const data = fs.createReadStream(filePath).pipe(csv());
     data.on('data', chunk => observer.next(chunk));
     data.on('end', () => observer.complete());
+    data.on('error', () => { throw new Error('Error: there was an error reading the extract file.') });
 
     // Closing the stream
     return () => data.pause();
