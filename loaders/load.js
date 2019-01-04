@@ -1,7 +1,7 @@
 const { Observable } = require('rxjs');
 const { MongoClient } = require('mongodb');
 const fs = require('file-system');
-var csvWriter = require('csv-write-stream')
+const csvWriter = require('csv-write-stream')
 
 const load = {};
 
@@ -37,6 +37,8 @@ load.toXML = () => {
  * @return
  */
 
+
+// One row at a time
 load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
 
   // Setting up and connecting to MongoDB
