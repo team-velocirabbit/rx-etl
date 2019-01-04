@@ -12,7 +12,6 @@ const load = require('./loaders/load');
  * and combines and executes the ETL process through streaming, using rxjs Observables
  * */
 class Etl {
-
 	/**
 	 * initiates and stores initial values of the state that stores all contents of ETL
 	 */
