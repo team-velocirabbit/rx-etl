@@ -8,14 +8,14 @@ const load = {};
 /**
  * Exports transformed data locally to a CSV file
  * 
- * @param {object} - data to export to file/db
- * @param {string} - a file path and name for the exported CSV file
+ * @param {object} data - array of rows to export to file/db
+ * @param {string} outputFile - a file path and name for the exported CSV file
  * @return
  */
-load.toCSV = (row, outputFile) => {
+load.toCSV = (data, outputFile) => {
   const writer = csvWriter();
-  writer.pipe(fs.createWriteStream(outputFile));
-  writer.write(row);
+  writer.pipe(fs.createWriteStream(outputFile + '.csv', {'flags': 'a'}));
+  data.forEach(record => writer.write(record))
   writer.end();
   return;
 };
@@ -37,7 +37,7 @@ load.toXML = () => {
  * @return
  */
 
-load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
+load.toMongoDB = (data, connectionString, collectionName) => { // Do we need to add a collection name field to the UI?
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
