@@ -2,6 +2,7 @@ const { MongoClient } = require('mongodb');
 const fs = require('file-system');
 const fileExtension = require('file-extension');
 const csvWriter = require('csv-write-stream');
+const js2xmlparser = require("js2xmlparser");
 const path = require('path');
 
 const load = {};
@@ -12,7 +13,7 @@ const load = {};
  * @param {object} data - An array of rows to export to file/db
  * @param {string} filePath - A file path for the exported CSV file
  * @param {string} fileName - A file path and name for the exported CSV file
- * @return {string}
+ * @return
  */
 load.toCSV = (data, filePath, fileName) => {
   // Check if data parameter is empty
@@ -24,7 +25,7 @@ load.toCSV = (data, filePath, fileName) => {
     if (err) return console.error('Error: there was an error writing data to output CSV file! \n');
   }))
   writer.end();
-  return ;
+  return;
 };
 
 /**
@@ -47,28 +48,42 @@ load.toJSON = (data, filePath, fileName) => {
   return;
 };
 
-load.toXML = () => {
-
+/**
+ * Exports transformed data locally to an XML file
+ *
+ * @param {array} data - An array of objects containing the data to be exported
+ * @param {string} filePath - A file path for the exported XML file
+ * @param {string} fileName - A file name for the exported XML file
+ * @return
+ */
+load.toXML = (data, filePath, fileName) => {
+  // Check if data paramenter is empty
+  if (data.length === 0) return console.error('Error: No data was passed into the load method! \n');
+  // Check if the file extension is XML
+  if (!fileExtension(fileName).toLowerCase() === 'xml') return console.error('ERROR: File does not appear to be XML.\n');
+  const xmlData = js2xmlparser.parse("dataset", data);
+  const outputFile = filePath + '/' + fileName;
+  fs.appendFile(outputFile, xmlData, (err) => {
+    if (err) return console.error('Error: There was a issue writing data to the XML file. ', err);
+  });
+  return;
 };
 
 /**
  * Exports transformed data to a Mongo database
  * 
- * @param {object} - data to export to file/db
- * @param {string} - connection string to the Mongo database
- * @param {string} - name of the desired collection
+ * @param {array} data - An array of objects containing the data to be exported
+ * @param {string} connectionString - connection string to the Mongo database
+ * @param {string} collectionName - name of the desired collection
  * @return
  */
-
-
-// One row at a time
-load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
+load.toMongoDB = (data, connectionString, collectionName) => {
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
     if (err) return console.error(err);
     // Creating a new collection in the Mongo database
-    let bulk = db.collection(collectionName).initializeOrderedBulkOp();
+    const bulk = db.collection(collectionName).initializeOrderedBulkOp();
     // insert each data row into bulk
     data.forEach(d => bulk.insert(d));
     // bulk insert to database
@@ -77,8 +92,16 @@ load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we
   return;
 };
 
-load.toPostgres = () => {
-
+/**
+ * Exports transformed data to a Postgres database
+ * 
+ * @param {array} data - An array of objects containing the data to be exported
+ * @param {string}
+ * @param {string}
+ * @return
+ */
+load.toPostgres = (data) => {
+  // Insert code here
 };
 
 module.exports = load;
