@@ -106,9 +106,10 @@ class Etl {
 		if (this.observable$ !== null) 
 			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
 		// create a new observable from the extractor$ observable, and complete the extractor$ observable
-		this.observable$ = this.extractor$.pipe(switchMap(data => Observable.create(observer => {
-			observer.next(data);
-		})));
+		this.observable$ = this.extractor$;
+		// .pipe(switchMap(data => Observable.create(observer => {
+		// 	observer.next(data);
+		// })));
 		// pipe each event through a transformer function
 		for (let i = 0; i < this.transformers.length; i += 1) {
 			this.observable$ = this.observable$.pipe(map(data => this.transformers[i](data)));
