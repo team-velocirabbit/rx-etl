@@ -57,7 +57,7 @@ extract.fromJSON = (filePath) => {
     });
     data.on('data', chunk => observer.next(chunk));
     data.on('end', () => observer.complete());
-
+    
     // Closing the stream
     return () => data.pause();
   });

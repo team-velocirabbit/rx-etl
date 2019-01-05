@@ -2,45 +2,49 @@ const { MongoClient } = require('mongodb');
 const fs = require('file-system');
 const fileExtension = require('file-extension');
 const csvWriter = require('csv-write-stream');
+const path = require('path');
 
 const load = {};
 
 /**
  * Exports transformed data locally to a CSV file
  * 
- * @param {object} - data to export to file/db
- * @param {string} - a file path and name for the exported CSV file
- * @return
+ * @param {object} data - An array of rows to export to file/db
+ * @param {string} filePath - A file path for the exported CSV file
+ * @param {string} fileName - A file path and name for the exported CSV file
+ * @return {string}
  */
-load.toCSV = (row, outputFile) => {
+load.toCSV = (data, filePath, fileName) => {
+  // Check if data parameter is empty
+  if (data.length === 0) return console.err('Error: No data was passed into the load method! \n');
+  const outputFile = filePath + '/' + fileName;
   const writer = csvWriter();
-  writer.pipe(fs.createWriteStream(outputFile));
-  writer.write(row);
+  writer.pipe(fs.createWriteStream(outputFile, {'flags': 'a'}));
+  data.forEach(record => writer.write(record, (data, err) => {
+    if (err) return console.error('Error: there was an error writing data to output CSV file! \n');
+  }))
   writer.end();
-  return;
+  return ;
 };
 
 /**
  * Exports transformed data locally to a JSON file
  * 
- * @param {array} - An array of objects containing the data to be exported
- * @param {string} - A file path for the exported CSV file
- * @param {string} - A file name for the exported CSV file
- * @return {string} - A console log indicating success or error
+ * @param {array} data - An array of objects containing the data to be exported
+ * @param {string} filePath - A file path for the exported JSON file
+ * @param {string} fileName - A file name for the exported JSON file
+ * @return
  */
 load.toJSON = (data, filePath, fileName) => {
   // Check if data paramenter is empty
-  if (data.length === 0) return console.error('Error: No data was passed into this method');
-  // Check if file path is empty or missing
-  if (!filePath) return console.error('Error: A file path was not passed into this method');
-  // Check if file name is empty or missing
-  if (!fileName) return console.error('Error: A file name was not passed into this method');
+  if (data.length === 0) return console.error('Error: No data was passed into the load method! \n');
+  const outputFile = filePath + '/' + fileName;
   // Check if the file extension is JSON
   if (!fileExtension(fileName).toLowerCase() === 'json') return console.error('ERROR: File does not appear to be JSON.\n');
-  fs.appendFile(`${filePath}/${fileName}`, JSON.stringify(data, null, '\t'), (err) => {
-    if (err) console.error('Error: There was a issue writing data to the JSON file. ', err);
-    else console.log('Success: The JSON files was successfully created.');
+  fs.appendFile(outputFile, JSON.stringify(data, null, '\t'), (err) => {
+    if (err) return console.error('Error: There was a issue writing data to the JSON file. ', err);
   });
+  return;
 };
 
 load.toXML = () => {
