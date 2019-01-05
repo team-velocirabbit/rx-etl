@@ -62,7 +62,7 @@ load.toXML = () => {
 
 
 // One row at a time
-load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
+load.toMongoDB = (data, connectionString, collectionName) => { // Do we need to add a collection name field to the UI?
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors
