@@ -158,14 +158,14 @@ app.get('/etlPg', (req, res) => {
 
 app.get('/test', (req, res) => {
 
-const filePath = __dirname;
-const fileName = 'output.csv';
+const filePath = '/Users/tkachler/Desktop';
+const fileName = 'output.xml';
 
 
 	new testEtl()
 		.addExtractors(extract.fromXML, 'MOCK_DATA.xml')
 		.addTransformers(combineNames)
-		.addLoaders(load.toCSV)
+		.addLoaders(load.toXML)
 		.combine()																										
 		.start()
 

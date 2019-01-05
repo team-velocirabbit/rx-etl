@@ -19,6 +19,7 @@
     "express": "^4.16.4",
     "file-extension": "^4.0.5",
     "file-system": "^2.2.2",
+    "js2xmlparser": "3.0.0",
     "json2csv": "^4.3.2",
     "mongo-client": "^0.2.1",
     "mongodb": "^2.2.33",
