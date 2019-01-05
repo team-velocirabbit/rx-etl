@@ -163,7 +163,7 @@ const fileName = 'output.xml';
 
 
 	new testEtl()
-		.addExtractors(extract.fromCSV, 'MOCK_DATA.csv')
+		.addExtractors(extract.fromXML, 'MOCK_DATA.xml')
 		.addTransformers(combineNames)
 		.addLoaders(load.toXML)
 		.combine()																										
