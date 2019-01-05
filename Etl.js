@@ -4,6 +4,7 @@ const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
 const { MongoClient } = require('mongodb');
 const { invert } = require('underscore');
+const path = require('path');
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
 
@@ -22,7 +23,8 @@ class Etl {
 		this.observable$ = null;
 		this.connectionString = '';
 		this.collectionName = '';
-		this.outputFilename = '';
+		this.outputFilePath = '';
+		this.outputFileName = '';
 		this.test = '',
 		this.type = ''
 	}
@@ -74,11 +76,11 @@ class Etl {
 	 * Collects loader function and database connection strings and stores it in the state of Etl
 	 * 
 	 * @param {function} loader - One (or many) functions that transforms the source data
-	 * @param {string} connectStrOrFilename - connect string to the load db (Mongo or Postgres) OR filename if loading to flatfile
-	 * @param {string} collectionName - The collection name (optional), 'etl_output' by default
+	 * @param {string} collectionNameOrFileName - collection name (optional) OR file name, 'etl_output' by default
+	 * @param {string} connectStrOrFilePath - connect string to the load db OR file path if loading to flatfile
 	 * @returns {this}
 	 */
-	addLoaders(loader, connectStrOrFilename, collectionName = 'etl_output') {
+	addLoaders(loader, collectionNameOrFileName, connectStrOrFilePath) {
 		// parse the loader to function to check if loader is to a flat file or db
 		let type = '';
 		// validate params. If not valid, then reset the Etl's state and throw error
@@ -92,28 +94,43 @@ class Etl {
 
 		// makes sure that connectionString and collectionName is provided if loader is to a database
 		if ((type === 'mongodb' || type === 'postgres') && 
-			((typeof connectStrOrFilename !== 'string' || connectStrOrFilename.length === 0) || 
-			(typeof collectionName !== 'string' || collectionName.length === 0))) {
+			((typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) || 
+			(typeof collectionNameOrFileName !== 'string' || collectionNameOrFileName.length === 0))) {
 				this.reset();
 				return console.error("Error: database loaders must provide connection string AND collection / table name in the parameter!\n");
 		} else if (type === 'mongodb' || type === 'postgres') {
 			this.type = 'db'
-			this.loader = loader;
-			this.connectionString = connectStrOrFilename;
-			this.collectionName = collectionName;
+			this.connectionString = connectStrOrFilePath;
+			this.collectionName = collectionNameOrFileName ? collectionNameOrFileName : ('etl_output');
 		} 
 
 		// make sure filename is provided if loading to flat file
-		if ((type === 'csv' || type === 'xml' || type === 'json') && 
-			(typeof connectStrOrFilename !== 'string' ) ) {
+		if ((type === 'csv' || type === 'xml' || type === 'json') &&
+			((connectStrOrFilePath && typeof connectStrOrFilePath !== 'string') 
+			|| (collectionNameOrFileName && typeof collectionNameOrFileName !== 'string'))) {
 				this.reset();
-				return console.error("Error: flatfile loaders must provide output filename as the second argument!\n");
+				return console.error("Error: flatfile loaders must provide valid output file path and/or file name!\n");
 		} else if (type === 'csv' || type === 'xml' || type === 'json') {
-			this.type = 'flatfile';
-			this.loader = loader;
-			this.outputFilename = connectStrOrFilename ? connectStrOrFilename : 'etl_output';
-		}
 
+			// make sure appropriate output file was provided if given one (and not the default 'etl_output')
+			if (collectionNameOrFileName && (collectionNameOrFileName !== 'etl_output')) {
+				if (type === 'csv' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'csv') {
+					return console.error("Error: loading to csv requires output file to be of type '.csv'!\n")
+				}
+				if (type === 'xml' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'xml') {
+					return console.error("Error: loading to xml requires output file to be of type '.xml'!\n")
+				}
+				if (type === 'json' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'json') {
+					return console.error("Error: loading to json requires output file to be of type '.json'!\n")
+				}
+			}
+			this.type = 'flatfile';
+
+			// if not provided, by default, outputFileName and outFilePath are given default values
+			this.outputFileName = collectionNameOrFileName ? collectionNameOrFileName : ('etl_output' + '.' + type);
+			this.outputFilePath = connectStrOrFilePath ? connectStrOrFilePath : __dirname;
+		}
+		this.loader = loader;
 		return this;
 	}
 
@@ -141,7 +158,7 @@ class Etl {
 
 		// check if loader type is flatfile or db and pipe each event through the loader function
 		if (this.type === 'flatfile') {
-			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.outputFilename)));
+			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.outputFilePath, this.outputFileName)));
 		} else if (this.type === 'db') {
 			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
 		}
@@ -186,17 +203,17 @@ class Etl {
 	 * 
 	 * @returns {this}
 	 */
-	simple(extractString, callback, loadString, collectionName = 'etl_output') {
+	simple(extractString, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
 		// validate input
 		if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0) 
 			return console.error('Error: first parameter of simple() must be a string and cannot be empty!');
-		if (callback === undefined || typeof callback !== 'function') 
+		if (callback === undefined || !callback instanceof Array) 
 			return console.error('Error: second parameter of simple() must be a function and cannot be empty!');
-		if (loadString === undefined || typeof loadString !== 'string' || loadString.length === 0) 
+		if (connectStrOrFilePath === undefined || typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) 
 			return console.error('Error: third parameter of simple() must be a string and cannot be empty!');
 
 		// add valid callbacks to the list of transformers in state
-		this.transformers.push(callback);
+		callback.forEach(cb => this.transformers.push(cb));
 
 		/* EXTRACT: check extractString to choose appropriate extractor */
 		if (fileExtension(extractString).toLowerCase() === 'csv') this.extractor$ = extract.fromCSV(extractString);
@@ -206,19 +223,24 @@ class Etl {
 		// buffer the observable to collect 99 at a time
 		this.extractor$ = this.extractor$.pipe(bufferCount(1000, 1000));
 
-		// LOAD: check loadString to load to appropriate database
-		if (fileExtension(loadString).toLowerCase() === 'csv') this.loader = load.toCSV;
-		if (fileExtension(loadString).toLowerCase() === 'json') this.loader = load.toJSON;
-	  if(fileExtension(loadString).toLowerCase() === 'xml') this.loader = load.toXML;
-		if (connectionString(loadString).protocol && connectionString(loadString).protocol === 'postgres') {
-			this.loader = load.toPostgres;
-			this.connectionString = loadString;
-			this.collectionName = collectionName;
+		// make sure user specifies output filename to be able to add appropriate loader
+		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'etl_output') {
+			return console.error("Error: to use simple, please specify output file name ending in: '.csv', '.xml', '.json'!\n");
 		}
-	  if (connectionString(loadString).protocol && connectionString(loadString).protocol === 'mongodb') {
+
+		// LOAD: check input to load to appropriate output source
+		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'csv') this.loader = load.toCSV;
+		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'json') this.loader = load.toJSON;
+	  if(fileExtension(collectionNameOrFileName).toLowerCase() === 'xml') this.loader = load.toXML;
+		if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'postgres') {
+			this.loader = load.toPostgres;
+			this.connectionString = connectStrOrFilePath;
+			this.collectionName = collectionNameOrFileName;
+		}
+	  if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'mongodb') {
 			this.loader = load.toMongoDB;
-			this.connectionString = loadString;
-			this.collectionName = collectionName;
+			this.connectionString = connectStrOrFilePath;
+			this.collectionName = collectionNameOrFileName;
 		}
 		return this;
 	}
