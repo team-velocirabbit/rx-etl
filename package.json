@@ -1,6 +1,6 @@
 {
-  "name": "etl-test",
-  "version": "1.0.0",
+  "name": "not-my-fault",
+  "version": "0.1.0",
   "description": "",
   "main": "Etl.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "mongodb": "^2.2.33",
     "nodemon": "^1.18.9",
     "path": "^0.12.7",
-    "pg": "^4.5.6",
+    "pg": "^4.5.7",
     "pg-copy-streams": "^1.2.0",
     "pg-pool": "^2.0.5",
     "readline": "^1.3.0",

@@ -1,5 +1,5 @@
 const { Observable } = require('rxjs');
-const { count, tap, switchMap, map, bufferCount } = require('rxjs/operators');
+const { count, tap, switchMap, flatMap, map, bufferCount } = require('rxjs/operators');
 const fileExtension = require('file-extension');
 const connectionString = require('connection-string');
 const { MongoClient } = require('mongodb');
@@ -12,7 +12,6 @@ const load = require('./loaders/load');
  * and combines and executes the ETL process through streaming, using rxjs Observables
  * */
 class Etl {
-
 	/**
 	 * initiates and stores initial values of the state that stores all contents of ETL
 	 */
@@ -32,7 +31,13 @@ class Etl {
 	 * @param {Observable} extractor$ - An observable that reads and streams the data from input source
 	 * @returns {this}
 	 */
-	addExtractors(extractor$) {
+	addExtractors(extractorFunction, filepath) {
+		// retrieve extractor observable from filepath
+		let extractor$ = extractorFunction(filepath);
+
+		// buffer the observable to collect 99 at a time
+		extractor$ = extractor$.pipe(bufferCount(1000, 1000));
+
 		// validate extractor$. If not valid, then reset Etl's state and throw error
 		if (!(extractor$ instanceof Observable)) {
 			this.reset();
@@ -50,6 +55,7 @@ class Etl {
 	 * @returns {this}
 	 */
 	addTransformers(...transformers) {
+
 		// validate each function in transformers. If not valid, then reset Etl's state and throw error
 		for (let i = 0; i < transformers.length; i += 1) {
 			if (!(transformers[i] instanceof Function)) {
@@ -107,44 +113,18 @@ class Etl {
 			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
 		// create a new observable from the extractor$ observable, and complete the extractor$ observable
 		this.observable$ = this.extractor$;
-		// .pipe(switchMap(data => Observable.create(observer => {
-		// observer.next(data);
-		// })));
+		
 		// pipe each event through a transformer function
 		for (let i = 0; i < this.transformers.length; i += 1) {
-			this.observable$ = this.observable$.pipe(map(data => this.transformers[i](data)));
+			this.observable$ = this.observable$.pipe(map(data => {
+				const result = [];
+				data.forEach(d => result.push(this.transformers[i](d)));
+				return result;
+			}));
 		}
 
 		// pipe each event to the loader function
 		this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
-		
-
-		/* UNDER CONSTRUCTION --> WORK ON BULK INSERTING */
-		// const totalDoc$= this.observable$.pipe(count());
-		// let loader = this.loader;
-
-		// let data = [];
-		// const counter = 0;
-		// totalDoc$.subscribe(c => console.log('hiiii'));
-
-		// this.observable$ = this.observable$
-		// 	.pipe(map(d => {
-		// 		counter += 1;
-		// 		if (data.length === 2) {
-		// 			data.push(d);
-		// 			console.log('going to insert now');
-		// 			this.loader(data, this.connectionString, this.collectionName);
-		// 			data = [];
-		// 			return;
-		// 		} else if (data.length !== 0 && count === counter) {
-		// 			this.loader(data, this.connectionString, this.collectionName);
-		// 			data = [];
-		// 			return;
-		// 		} else {
-		// 			data.push(d);
-		// 			return;
-		// 		}
-		// 	}))
 
 		return this;
 	}
@@ -202,6 +182,9 @@ class Etl {
 		if (fileExtension(extractString).toLowerCase() === 'csv') this.extractor$ = extract.fromCSV(extractString);
 		if (fileExtension(extractString).toLowerCase() === 'json') this.extractor$ = extract.fromJSON(extractString);
 		if (fileExtension(extractString).toLowerCase() === 'xml') this.extractor$ = extract.fromXML(extractString);
+
+		// buffer the observable to collect 99 at a time
+		this.extractor$ = this.extractor$.pipe(bufferCount(1000, 1000));
 
 		// LOAD: check loadString to load to appropriate database
 		if (fileExtension(loadString).toLowerCase() === 'csv') this.loader = load.toCSV;
