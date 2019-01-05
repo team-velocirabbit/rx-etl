@@ -1,27 +1,50 @@
-const { Observable } = require('rxjs');
 const { MongoClient } = require('mongodb');
 const fs = require('file-system');
-var csvWriter = require('csv-write-stream')
+const fileExtension = require('file-extension');
+const csvWriter = require('csv-write-stream');
+const path = require('path');
 
 const load = {};
 
 /**
  * Exports transformed data locally to a CSV file
  * 
- * @param {object} data - array of rows to export to file/db
- * @param {string} outputFile - a file path and name for the exported CSV file
- * @return
+ * @param {object} data - An array of rows to export to file/db
+ * @param {string} filePath - A file path for the exported CSV file
+ * @param {string} fileName - A file path and name for the exported CSV file
+ * @return {string}
  */
-load.toCSV = (data, outputFile) => {
+load.toCSV = (data, filePath, fileName) => {
+  // Check if data parameter is empty
+  if (data.length === 0) return console.err('Error: No data was passed into the load method! \n');
+  const outputFile = filePath + '/' + fileName;
   const writer = csvWriter();
-  writer.pipe(fs.createWriteStream(outputFile + '.csv', {'flags': 'a'}));
-  data.forEach(record => writer.write(record))
+  writer.pipe(fs.createWriteStream(outputFile, {'flags': 'a'}));
+  data.forEach(record => writer.write(record, (data, err) => {
+    if (err) return console.error('Error: there was an error writing data to output CSV file! \n');
+  }))
   writer.end();
-  return;
+  return ;
 };
 
-load.toJSON = () => {
-
+/**
+ * Exports transformed data locally to a JSON file
+ * 
+ * @param {array} data - An array of objects containing the data to be exported
+ * @param {string} filePath - A file path for the exported JSON file
+ * @param {string} fileName - A file name for the exported JSON file
+ * @return
+ */
+load.toJSON = (data, filePath, fileName) => {
+  // Check if data paramenter is empty
+  if (data.length === 0) return console.error('Error: No data was passed into the load method! \n');
+  const outputFile = filePath + '/' + fileName;
+  // Check if the file extension is JSON
+  if (!fileExtension(fileName).toLowerCase() === 'json') return console.error('ERROR: File does not appear to be JSON.\n');
+  fs.appendFile(outputFile, JSON.stringify(data, null, '\t'), (err) => {
+    if (err) return console.error('Error: There was a issue writing data to the JSON file. ', err);
+  });
+  return;
 };
 
 load.toXML = () => {
@@ -37,7 +60,9 @@ load.toXML = () => {
  * @return
  */
 
-load.toMongoDB = (data, connectionString, collectionName) => { // Do we need to add a collection name field to the UI?
+
+// One row at a time
+load.toMongoDB = (data, connectionString, collectionName, message) => { // Do we need to add a collection name field to the UI?
   // Setting up and connecting to MongoDB
   MongoClient.connect(connectionString, (err, db) => {
     // Handling connection errors

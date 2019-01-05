@@ -158,21 +158,24 @@ app.get('/etlPg', (req, res) => {
 
 app.get('/test', (req, res) => {
 
+const filePath = __dirname;
+const fileName = 'output.csv';
+
+
 	new testEtl()
 		.addExtractors(extract.fromCSV, 'MOCK_DATA.csv')
 		.addTransformers(combineNames)
-		.addLoaders(load.toCSV, 'record_output')
-		.combine()																											
+		.addLoaders(load.toCSV)
+		.combine()																										
 		.start()
 
-		//load to mongo
-		// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+				// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 
 
 	// const etl = new testEtl()
-	// 	etl.simple('MOCK_DATA.csv', combineNames, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-	// 	etl.combine()
-	// 	etl.start()
+	// 	.simple('MOCK_DATA.csv', [combineNames], __dirname, 'pleasework.csv')
+	// 	.combine()
+	// 	.start()
 
 	res.sendStatus(200);
 });
