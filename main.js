@@ -163,13 +163,14 @@ const fileName = 'output.xml';
 
 
 	new testEtl()
-		.addExtractors(extract.fromXML, 'MOCK_DATA.xml')
+	  // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
+		.addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.addTransformers(combineNames)
-		.addLoaders(load.toXML)
+		.addLoaders(load.toXML, fileName, filePath)
+		// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.combine()																										
 		.start()
 
-				// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 
 
 	// const etl = new testEtl()
