@@ -1,6 +1,7 @@
 const { Observable, Subject, of, from, fromEvent } = require('rxjs');
 const { create, concat, map, takeUntil } = require('rxjs/operators');
 const readline = require('readline');
+const scheduler = require('node-schedule');
 
 // TESTING LIBRARY 123123123123 
 const testEtl = require('./Etl');
@@ -161,12 +162,12 @@ app.get('/test', (req, res) => {
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
 
-
 	new testEtl()
-		.addExtractors(extract.fromXML, 'MOCK_DATA.xml')
+		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
 		.addTransformers(combineNames)
-		.addLoaders(load.toXML)
-		.combine()																										
+		.addLoaders(load.toXML, 'josie.xml')
+		.combine()		
+		.addSchedule('1aaaa * * * * *')																								
 		.start()
 
 				// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
