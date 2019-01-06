@@ -2,7 +2,6 @@ const { Observable } = require('rxjs');
 const { MongoClient } = require('mongodb');
 const pg = require('pg');
 const QueryStream = require('pg-query-stream');
-const JSONStream = require('JSONStream');
 const fileExtension = require('file-extension');
 const conStrParse = require('connection-string');
 const csv = require('csv-parser');
