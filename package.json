@@ -25,6 +25,7 @@
     "mongodb": "^2.2.33",
     "nodemon": "^1.18.9",
     "path": "^0.12.7",
+    "performance-now": "2.1.0",
     "pg": "^4.5.7",
     "pg-copy-streams": "^1.2.0",
     "pg-pool": "^2.0.5",
