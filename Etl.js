@@ -7,6 +7,12 @@ const { invert } = require('underscore');
 const path = require('path');
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
+require('dotenv').config()
+const sgEmail = require('@sendgrid/mail');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN,
+);
 
 /** 
  * Class that stores the extractor, transformers, and loader, 
@@ -181,7 +187,8 @@ class Etl {
 			(err) => console.error('Error: unable to start etl process.\n', err),
 			null
 		);
-		return 'Successfully Completed';
+		// return 'Successfully Completed';
+		return this;
 	}
 
 	/**
@@ -225,7 +232,7 @@ class Etl {
 
 		// make sure user specifies output filename to be able to add appropriate loader
 		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'etl_output') {
-			return console.error("Error: to use simple, please specify output file name ending in: '.csv', '.xml', '.json'!\n");
+      return console.error("Error: to use simple, please specify output file name ending in: '.csv', '.xml', '.json'!\n");
 		}
 
 		// LOAD: check input to load to appropriate output source
@@ -244,6 +251,40 @@ class Etl {
 		}
 		return this;
 	}
+
+  /**
+  * Method for sending SendGrid email notifications upon job completion
+  *
+  * @param {Object} message - An object containing the necessary info for sending a SendGrid email notification
+	* @returns {this}
+  */
+  addEmailNotification(message) {
+    sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
+    const msg = {
+      to: message.to,
+      from: message.from,
+      subject: message.subject,
+      text: message.text,
+      html: message.html,
+    };
+    sgEmail.send(msg);
+    return this;
+  }
+
+  /**
+  * Method for sending Twilio text notifications upon job completion
+  *
+  * @param {Object} message - An object containing the necessary info for sending a Twilio text notification
+  * @returns {this}
+  */
+  addTextNotification(message) {
+    client.messages.create({
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: message.to,
+      body: message.body,
+    });
+    return this;
+  }
 }
 
 module.exports = Etl;
