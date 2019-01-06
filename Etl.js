@@ -35,9 +35,9 @@ class Etl {
 	 * @param {Observable} extractor$ - An observable that reads and streams the data from input source
 	 * @returns {this}
 	 */
-	addExtractors(extractorFunction, filepath) {
+	addExtractors(extractorFunction, filepath, collection) {
 		// retrieve extractor observable from filepath
-		let extractor$ = extractorFunction(filepath);
+		let extractor$ = extractorFunction(filepath, collection);
 
 		// buffer the observable to collect 99 at a time
 		extractor$ = extractor$.pipe(bufferCount(1000, 1000));
