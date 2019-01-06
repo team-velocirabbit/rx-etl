@@ -1,5 +1,8 @@
 const { Observable } = require('rxjs');
 const { MongoClient } = require('mongodb');
+const pg = require('pg');
+const QueryStream = require('pg-query-stream');
+const JSONStream = require('JSONStream');
 const fileExtension = require('file-extension');
 const conStrParse = require('connection-string');
 const csv = require('csv-parser');
@@ -107,7 +110,7 @@ extract.fromMongoDB = (connectionString, collectionName) => {
   return Observable.create((observer) => {
     // Connect to the database
     MongoClient.connect(connectionString, (err, db) => {
-      // Handle errors connecting to the Mongo database
+      // Handling errors connecting to the Mongo database
       if (err) return console.error(err);
 
       // Adding the collection name to the database connection
@@ -147,15 +150,66 @@ extract.fromMongoDB = (connectionString, collectionName) => {
 };
 
 /**
- * Description
+ * Import data from a POstgres collection
  *
- * @param {} - 
- * @return {} - 
+ * @param {string} connectionString - connection string for the Mongo database
+ * @param {string} table - name of the desired table
+ * @return {Observable} - an observable containing the parsed Postgres table data
  */
-extract.fromPostgres = () => {
-  // Add smart stuff here...
-};
+extract.fromPostgres = (connectionString, tableName) => {
+  console.log('Starting fromPostgres...');
 
+  // Capturing start time for performance testing
+  const start = now();
+
+  // Check if a file path was passed into the function
+  if (connectionString === '') throw new Error('Error: You must provide a valid connection string!');
+
+  // Check if the connection string uses the Mongo protocol
+  const conStrObj = conStrParse(connectionString);
+  if (conStrObj.protocol !== 'postgres') throw new Error('Error: Connection string does not appear to use the Postgres protocol!');
+
+  // Check if a collection name was passed into the function
+  if (tableName === '') throw new Error('Error: You must provide a valid table name!');
+
+  // Create a new observable
+  return Observable.create((observer) => {
+
+    const pgClient = new pg.Client(connectionString);
+    // eslint-disable-next-line prefer-arrow-callback
+    pgClient.connect(function (err, client) {
+      // Handling errors connecting to the Postgres database
+      if (err) throw new Error('Error: there was an error connecting to the Postgres database!');
+
+      const query = new QueryStream('SELECT * FROM test');
+      const stream = client.query(query);
+
+      // On error streaming data from Postgres...
+      stream.on('error', () => { throw new Error('Error: there was an error streaming the Postgres data!'); });
+
+      // On next streaming data from Postgres...
+      stream.on('data', chunk => observer.next(chunk));
+
+      // On completion of streaming data from Postgres...
+      stream.on('end', () => {
+        console.log('Postgres streaming completed...');
+        console.log('Ending fromPostgres...');
+
+        // Captruing end time for performance testing
+        const end = now();
+
+        // Logging runtime
+        console.log('Runtime:', msToTime(Math.abs(start - end)));
+
+        // // Closing database connection
+        pgClient.end();
+
+        // Completing observer
+        observer.complete();
+      });
+    });
+  });
+};
 
 // Helper function for performance testing
 function msToTime(ms) {
