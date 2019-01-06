@@ -161,15 +161,25 @@ app.get('/test', (req, res) => {
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
 
-
+  // Testing fromPostgres => toXML
 	new testEtl()
 	  // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
-		.addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		.addExtractors(extract.fromPostgres, 'postgres://pssshksz:Wh0grf6b-steQ88Dl0EIqk06siRpayld@pellefant.db.elephantsql.com:5432/pssshksz?ssl=true', 'test')
 		.addTransformers(combineNames)
 		.addLoaders(load.toXML, fileName, filePath)
 		// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.combine()																										
 		.start()
+
+		// Testing fromMongo => toXML
+		// new testEtl()
+	  // // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
+		// .addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		// .addTransformers(combineNames)
+		// .addLoaders(load.toXML, fileName, filePath)
+		// // .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		// .combine()																										
+		// .start()
 
 
 
