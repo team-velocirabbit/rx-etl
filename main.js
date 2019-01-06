@@ -8,7 +8,6 @@ const extract = require('./extractors/extract');
 const transform = require('./transformers/transform');
 const load = require('./loaders/load');
 
-
 //******************** */
  
 const JSONStream = require('JSONStream');
@@ -161,15 +160,33 @@ app.get('/test', (req, res) => {
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
 
-  // Testing fromPostgres => toXML
+	// Testing fromPostgres => toXML
+	// Object for sending SendGrid email notifications
+	const emailMessage = {
+		to: 'kachler@mac.com',
+		from: 'kachler@mac.com',
+		subject: 'Your RX-ETL job has finished',
+		text: 'Your RX-ETL job has finished',
+		html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+	};
+
+	const textMessage = {
+    to: '6193095463',
+    body: 'Your RX-ETL job has finished',
+	}
+
 	new testEtl()
 	  // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
 		.addExtractors(extract.fromPostgres, 'postgres://pssshksz:Wh0grf6b-steQ88Dl0EIqk06siRpayld@pellefant.db.elephantsql.com:5432/pssshksz?ssl=true', 'test')
 		.addTransformers(combineNames)
 		.addLoaders(load.toXML, fileName, filePath)
 		// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-		.combine()																										
+		.combine()
 		.start()
+		.addEmailNotification(emailMessage)
+		.addTextNotification(textMessage)
+
+
 
 		// Testing fromMongo => toXML
 		// new testEtl()
