@@ -156,86 +156,30 @@ app.get('/etlPg', (req, res) => {
 	res.sendStatus(200);
 });
 
-
-
-
-
 app.get('/test', (req, res) => {
+
+const filePath = '/Users/tkachler/Desktop';
+const fileName = 'output.xml';
 
 
 	new testEtl()
-		.addExtractors(extract.fromCSV('MOCK_DATA.csv'))
+		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
 		.addTransformers(combineNames)
-		.addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-		.combine()																											
+		.addLoaders(load.toXML, 'josie.xml')
+		.combine()																										
 		.start()
-	
+
+				// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+
+
 	// const etl = new testEtl()
-	// 	.simple('MOCK_DATA.csv', combineNames, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+	// 	.simple('MOCK_DATA.csv', [combineNames], __dirname, 'pleasework.csv')
 	// 	.combine()
 	// 	.start()
 
 	res.sendStatus(200);
 });
 
-
 app.listen(`${PORT}`, () => {
   console.log(`Server listening on PORT: ${PORT}`);
 });
-
-
-/* CSV TO POSTGRES USING ETL */ 
-	// fs.createReadStream(res.locals.filename)
-	// 	.pipe(etl.csv())
-	// 	.pipe(etl.map(data => {
-	// 		const d = {};
-	// 		d.id = data.id;
-	// 		d.full_name = data["first_name"] + ' ' + data["last_name"];
-	// 		d.email_address = data.email_address;
-	// 		d.password = data.password;
-	// 		d.phone = data.phone.replace(/[^0-9]/g, '');
-	// 		d.street_address = data.street_address;
-	// 	  d.city = data.city;
-	// 		d.postal_code = data.postal_code;
-	// 		d.country = data.country;
-	// 		d["__line"] = (data.id * 1) + 1;
-	// 		return d;
-	// 	}))
-	// 	.pipe(etl.collect(100))
-	// 	.pipe(etl.map(data => {
-			
-	// 		data.forEach(data => {
-	// 			const query = 'INSERT INTO test ("full_name", "email_address", "password", "phone", "street_address", "city", "postal_code", "country") VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
-	// 			const values = [data['full_name'], data['email_address'], data['password'], data['phone'], data['street_address'], data['city'], data['postal_code'], data['country']];
-				
-	// 			pgClient.query(query, values);
-
-	// 			return data;
-	// 		})
-			
-	// 		return data;
-	// 	}))
-	// return next();
-
-/* USING ETL npm to store from CSV to MONGO */
-	// fs.createReadStream(res.locals.filename)
-	// 		.pipe(etl.csv())
-	// 		.pipe(etl.map(data => {
-	// 			const nd = {};
-	// 			if (data.country === 'United States') {
-	// 				nd.id = data.id;
-	// 				nd.full_name = data["first_name"] + ' ' + data["last_name"];
-	// 				nd.email_address = data.email_address;
-	// 				nd.password = data.password;
-	// 				nd.phone = data.phone.replace(/[^0-9]/g, '');
-	// 				nd.street_address = data.street_address;
-	// 				nd.city = data.city;
-	// 				nd.postal_code = data.postal_code;
-	// 				nd.country = data.country;
-	// 				nd["__line"] = (data.id * 1) + 1;
-	// 				return nd;
-	// 			}
-	// 			return;
-	// 		}))
-	// 		.pipe(etl.collect(100))
-	// 		.pipe(etl.mongo.insert(res.locals.filename === 'test.csv' ? jsonCollection : csvCollection))
