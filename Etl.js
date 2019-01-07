@@ -170,7 +170,7 @@ class Etl {
 	 * Subscribes to the Observable stored in Etl's state that encapsulates the entire Etl process
 	 * 
 	 * @param {boolean} startNow - value that indicates whether user wants job started right away or not
-	 * @returns {string} - return a success message upon completion with no error
+	 * @returns {this}
 	 */
 	start(startNow = true) {
 		if (typeof startNow !== 'boolean') {
@@ -207,7 +207,7 @@ class Etl {
 				null
 			);
 		}
-		return 'Successfully Completed';
+		return this;
 	}
 
 	/**
@@ -270,11 +270,11 @@ class Etl {
 	}
 
   /**
-  * Method for sending SendGrid email notifications upon job completion
-  *
-  * @param {Object} message - An object containing the necessary info for sending a SendGrid email notification
-	* @returns {this}
-  */
+	 * Method for sending SendGrid email notifications upon job completion
+	 *
+	 * @param {object} message - object containing the necessary info for sending a SendGrid email notification
+	 * @returns {this}
+	 */
   addEmailNotification(message) {
     sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
     const msg = {
@@ -289,11 +289,11 @@ class Etl {
   }
 
   /**
-  * Method for sending Twilio text notifications upon job completion
-  *
-  * @param {Object} message - An object containing the necessary info for sending a Twilio text notification
-  * @returns {this}
-  */
+   * Method for sending Twilio text notifications upon job completion
+   *
+   * @param {object} message - object containing the necessary info for sending a Twilio text notification
+   * @returns {this}
+   */
   addTextNotification(message) {
     client.messages.create({
       from: process.env.TWILIO_PHONE_NUMBER,
@@ -301,10 +301,12 @@ class Etl {
       body: message.body,
     });
     return this;
-  }
+	}
+	
 	/**
 	 * Aggregate schedules for job in an array in Etl's state
 	 * 
+	 * @param {string} cron - schedule in cron-format used to add schedule for job
 	 * @returns {this}
 	 */
 	addSchedule(...cron) {
