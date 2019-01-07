@@ -10,10 +10,10 @@ const load = {};
 /**
  * Exports transformed data locally to a CSV file
  * 
- * @param {object} data - An array of rows to export to file/db
- * @param {string} filePath - A file path for the exported CSV file
- * @param {string} fileName - A file path and name for the exported CSV file
- * @param {integer} initialWrite - A counter that tracks  number of times file is written to
+ * @param {object} data - array of rows to export to file/db
+ * @param {string} filePath - file path for the exported CSV file
+ * @param {string} fileName - file path and name for the exported CSV file
+ * @param {integer} initialWrite - counter that tracks  number of times file is written to
  * @return
  */
 load.toCSV = (data, filePath, fileName, initialWrite) => {
@@ -33,10 +33,10 @@ load.toCSV = (data, filePath, fileName, initialWrite) => {
 /**
  * Exports transformed data locally to a JSON file
  * 
- * @param {array} data - An array of objects containing the data to be exported
- * @param {string} filePath - A file path for the exported JSON file
- * @param {string} fileName - A file name for the exported JSON file
- * @param {integer} initialWrite - A counter that tracks  number of times file is written to
+ * @param {array} data - array of objects containing the data to be exported
+ * @param {string} filePath - file path for the exported JSON file
+ * @param {string} fileName - file name for the exported JSON file
+ * @param {integer} initialWrite - counter that tracks  number of times file is written to
  * @return
  */
 load.toJSON = (data, filePath, fileName, initialWrite) => {
@@ -57,10 +57,10 @@ load.toJSON = (data, filePath, fileName, initialWrite) => {
 /**
  * Exports transformed data locally to an XML file
  *
- * @param {array} data - An array of objects containing the data to be exported
- * @param {string} filePath - A file path for the exported XML file
- * @param {string} fileName - A file name for the exported XML file
- * @param {integer} initialWrite - A counter that tracks  number of times file is written to
+ * @param {array} data - array of objects containing the data to be exported
+ * @param {string} filePath - file path for the exported XML file
+ * @param {string} fileName - file name for the exported XML file
+ * @param {integer} initialWrite - counter that tracks  number of times file is written to
  * @return
  */
 load.toXML = (data, filePath, fileName, initialWrite) => {  
@@ -82,7 +82,7 @@ load.toXML = (data, filePath, fileName, initialWrite) => {
 /**
  * Exports transformed data to a Mongo database
  * 
- * @param {array} data - An array of objects containing the data to be exported
+ * @param {array} data - array of objects containing the data to be exported
  * @param {string} connectionString - connection string to the Mongo database
  * @param {string} collectionName - name of the desired collection
  * @return
@@ -105,7 +105,7 @@ load.toMongoDB = (data, connectionString, collectionName) => {
 /**
  * Exports transformed data to a Postgres database
  * 
- * @param {array} data - An array of objects containing the data to be exported
+ * @param {array} data - array of objects containing the data to be exported
  * @param {string}
  * @param {string}
  * @return

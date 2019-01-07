@@ -160,16 +160,29 @@ app.get('/test', (req, res) => {
 
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
+const emailMessage = {
+	to: 'kachler@gmail.com',
+	from: 'kachler@gmail.com',
+	subject: 'RX-ETL job completed',
+	text: 'Your RX-ETL job has finished.',
+	html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+};
+
+const textMessage = {
+	to: '6193095463',
+  body: 'Your RX-ETL job has finished.',
+}
 
 	new testEtl()
 		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
 		.addTransformers(combineNames)
 		.addLoaders(load.toXML, 'josie.xml')
 		.combine()		
-		.addSchedule('1aaaa * * * * *')																								
-		.start()
+		.addSchedule('1 * * * * *')																								
 		.addEmailNotification(emailMessage)
 		.addTextNotification(textMessage)
+		.start()
+
 
 
 
