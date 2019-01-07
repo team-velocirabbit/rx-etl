@@ -42,20 +42,20 @@ class Etl {
 	 * Collects extractor$ and adds it in Etl's state
 	 * 
 	 * @param {Observable} extractorFunction - extract function that streams data from input source
-	 * @param {string} filePath - file path of the extract file
+	 * @param {string} connectStrOrFilePath - file path of the extract file OR collection name of db
 	 * @returns {this}
 	 */
-	addExtractors(extractorFunction, filePath) {
-		// check to see that extract function matches filePath extension
+	addExtractors(extractorFunction, connectStrOrFilePath, collection) {
+		// check to see that extract function matches file path extension
 		const type = invert(extract)[extractorFunction].substring(4).toLowerCase();
-		const fileExt = fileExtension(filePath).toLowerCase();
-		if (type !== fileExt) {
+		const fileExt = fileExtension(connectStrOrFilePath).toLowerCase();
+		if ((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) {
 			this.reset();
 			throw new Error("please make sure extract function matches file type! \n");
 		}
-		// retrieve extractor observable from filePath
-		let extractor$ = extractorFunction(filePath);
-		// buffer the observable to collect 99 at a time
+		// retrieve extractor observable from connectStrOrFilePath
+		let extractor$ = extractorFunction(connectStrOrFilePath, collection);
+		// buffer the observable to collect 1000 at a time
 		extractor$ = extractor$.pipe(bufferCount(1000, 1000));
 		// validate extractor$. If not valid, then reset Etl's state and throw error
 		if (!(extractor$ instanceof Observable)) {
@@ -226,6 +226,14 @@ class Etl {
 		this.transformers = [];
 		this.loader = null;
 		this.observable$ = null;
+		this.connectionString = '';
+		this.collectionName = '';
+		this.outputFilePath = '';
+		this.outputFileName = '';
+		this.type = '';
+		this.initialWrite = 0;
+		this.schedule = [];
+		this.cronList = [];
 		return this;
 	}
 
