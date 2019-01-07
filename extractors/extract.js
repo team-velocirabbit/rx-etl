@@ -148,7 +148,7 @@ extract.fromMongoDB = (connectionString, collectionName) => {
 };
 
 /**
- * Import data from a POstgres collection
+ * Import data from a Postgres collection
  *
  * @param {string} connectionString - connection string for the Mongo database
  * @param {string} table - name of the desired table
@@ -209,7 +209,13 @@ extract.fromPostgres = (connectionString, tableName) => {
   });
 };
 
-// Helper function for performance testing
+/**
+ * A helper function for performance testing with the performance-now module
+ * Converts milliseconds to hours, minutes, seconds and milliseconds
+ *
+ * @param {number} ms - A time in milliseconds
+ * @return {string} - A string displaying hours, minutes, seconds and milliseconds
+ */
 function msToTime(ms) {
   const milliseconds = parseInt((ms%1000)/100);
   let seconds = parseInt((ms/1000)%60);
