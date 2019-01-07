@@ -4,7 +4,8 @@
   "description": "",
   "main": "Etl.js",
   "scripts": {
-    "start": "nodemon main.js"
+    "start": "nodemon main.js",
+    "test": "mocha ./tests"
   },
   "author": "",
   "license": "ISC",
@@ -37,5 +38,9 @@
     "rxjs": "^6.3.3",
     "twilio": "3.26.1",
     "underscore": "^1.9.1"
+  },
+  "devDependencies": {
+    "chai": "4.2.0",
+    "mocha": "5.2.0"
   }
 }
