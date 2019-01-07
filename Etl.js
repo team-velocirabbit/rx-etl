@@ -15,7 +15,7 @@ const load = require('./loaders/load');
  * */
 class Etl {
 	/**
-	 * initiates and stores initial values of the state that stores all contents of ETL
+	 * initiates and stores initial values of state that stores all contents of ETL
 	 */
 	constructor() {
 		this.extractor$ = null;
@@ -35,8 +35,8 @@ class Etl {
 	/**
 	 * Collects extractor$ and adds it in Etl's state
 	 * 
-	 * @param {Observable} extractor$ - An observable that reads and streams the data from input source
-	 * @param {string} filePath - The file path of the extract file
+	 * @param {Observable} extractorFunction - extract function that streams data from input source
+	 * @param {string} filePath - file path of the extract file
 	 * @returns {this}
 	 */
 	addExtractors(extractorFunction, filePath) {
@@ -49,7 +49,7 @@ class Etl {
 		}
 		// retrieve extractor observable from filePath
 		let extractor$ = extractorFunction(filePath);
-		// buffer the observable to collect 99 at a time
+		// buffer the observable to collect 1000 at a time
 		extractor$ = extractor$.pipe(bufferCount(1000, 1000));
 		// validate extractor$. If not valid, then reset Etl's state and throw error
 		if (!(extractor$ instanceof Observable)) {
@@ -62,17 +62,17 @@ class Etl {
 	}
 
 	/**
-	 * Collects transformer(s) and stores it in the state of Etl
+	 * Collects transformer(s) and stores it in Etl's state
 	 * 
 	 * @param {array} transformers - array of functions that transform the source data
 	 * @returns {this}
 	 */
 	addTransformers(...transformers) {
-		// validate each function in transformers. If not valid, then reset Etl's state and throw error
+		// validate each transformer function in input array, and store valid functions to Etl's state
 		for (let i = 0; i < transformers.length; i += 1) {
 			if (!(transformers[i] instanceof Function)) {
 				this.reset();
-				throw new Error("transformer functions must be of class 'Transformers'\n See docs for more details.\n")
+				throw new Error("argument must be an array of functions!\n See docs for more details.\n")
 			} else {
 				this.transformers.push(transformers[i]);
 			}
@@ -81,17 +81,16 @@ class Etl {
 	}
 
 	/**
-	 * Collects loader function and database connection strings and stores it in the state of Etl
+	 * Collects loader function, collection name (if db) or file name (if flatfile), 
+	 * connection string (if db) or file path (if flatfile) and stores it in the Etl's state
 	 * 
-	 * @param {function} loader - One (or many) functions that transforms the source data
-	 * @param {string} collectionNameOrFileName - collection name (optional) OR file name, 'etl_output' by default
-	 * @param {string} connectStrOrFilePath - connect string to the load db OR file path if loading to flatfile
+	 * @param {function} loader - one (or many) function(s) that transform the source data
+	 * @param {string} collectionNameOrFileName - collection name of load db OR file name of output
+	 * @param {string} connectStrOrFilePath - connect string to load db OR file path of output file
 	 * @returns {this}
 	 */
 	addLoaders(loader, collectionNameOrFileName, connectStrOrFilePath) {
-		// parse the loader to function to check if loader is to a flat file or db
 		let type = '';
-		// validate params. If not valid, then reset the Etl's state and throw error
 		if (!(loader instanceof Function)) {
 			this.reset();
 			throw new Error("loader functions must be of class 'Loaders'\n See docs for more details.\n")
@@ -170,11 +169,10 @@ class Etl {
 	/**
 	 * Subscribes to the Observable stored in Etl's state that encapsulates the entire Etl process
 	 * 
-	 * @param {boolean} startNow - Value that indicates whether user wants job started right away or not
-	 * @returns {string} message - send back a message declaring success or failure
+	 * @param {boolean} startNow - value that indicates whether user wants job started right away or not
+	 * @returns {string} - return a success message upon completion with no error
 	 */
 	start(startNow = true) {
-		// validate arguments passed in to method
 		if (typeof startNow !== 'boolean') {
 			throw new Error("invalid arg to .start() method! Please make sure arg is type 'boolean'!\n");
 		}
@@ -191,12 +189,11 @@ class Etl {
 					() => {
 						// reset initialWrite so that it overwrites file
 						this.initialWrite = 0;
-
 						this.observable$.subscribe(	
 							null, 
 							(err) => { throw new Error('unable to start etl process.\n', err) },
 							null
-						)
+						);
 					}
 				);
 				this.schedule.push(job);
@@ -214,7 +211,7 @@ class Etl {
 	}
 
 	/**
-	 * Resets the Etl's state to default values
+	 * Resets Etl's state to default values
 	 * 
 	 * @returns {this}
 	 */	
@@ -230,10 +227,13 @@ class Etl {
 	 * Simple method that encapsulates the three different methods to add extractor$, transformers, and loader
 	 * into a simple function that adds appropriate functions and methods to Etl's state
 	 * 
+	 * @param {string} extractString - name of file to extract from
+	 * @param {function} callback - array of transform functions
+	 * @param {string} connectStrOrFilePath - connect string of load db OR file path of output file
+	 * @param {string} collectionNameOrFileName - collection name of load db OR file name of output file
 	 * @returns {this}
 	 */
 	simple(extractString, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
-		// validate input
 		if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0) 
 			throw new Error('first parameter of simple() must be a string and cannot be empty!');
 		if (callback === undefined || !callback instanceof Array) 
