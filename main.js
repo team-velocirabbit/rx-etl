@@ -175,6 +175,7 @@ const textMessage = {
 
 	new testEtl()
 		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
+ // .addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.addTransformers(combineNames)
 		.addLoaders(load.toXML, 'josie.xml')
 		.combine()		
