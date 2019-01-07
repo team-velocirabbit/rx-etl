@@ -9,7 +9,6 @@ const extract = require('./extractors/extract');
 const transform = require('./transformers/transform');
 const load = require('./loaders/load');
 
-
 //******************** */
  
 const JSONStream = require('JSONStream');
@@ -169,8 +168,21 @@ const fileName = 'output.xml';
 		.combine()		
 		.addSchedule('1aaaa * * * * *')																								
 		.start()
+		.addEmailNotification(emailMessage)
+		.addTextNotification(textMessage)
 
-				// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+
+
+		// Testing fromMongo => toXML
+		// new testEtl()
+	  // // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
+		// .addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		// .addTransformers(combineNames)
+		// .addLoaders(load.toXML, fileName, filePath)
+		// // .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		// .combine()																										
+		// .start()
+
 
 
 	// const etl = new testEtl()
