@@ -42,28 +42,20 @@ class Etl {
 	 * Collects extractor$ and adds it in Etl's state
 	 * 
 	 * @param {Observable} extractorFunction - extract function that streams data from input source
-	 * @param {string} filePath - file path of the extract file
+	 * @param {string} filePathOrCollection - file path of the extract file OR collection name of db
 	 * @returns {this}
 	 */
-<<<<<<< HEAD
-	addExtractors(extractorFunction, filePath) {
-		// check to see that extract function matches filePath extension
+	addExtractors(extractorFunction, connectStrOrFilePath, collection) {
+		// check to see that extract function matches file path extension
 		const type = invert(extract)[extractorFunction].substring(4).toLowerCase();
-		const fileExt = fileExtension(filePath).toLowerCase();
-		if (type !== fileExt) {
+		const fileExt = fileExtension(connectStrOrFilePath).toLowerCase();
+		if ((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) {
 			this.reset();
 			throw new Error("please make sure extract function matches file type! \n");
 		}
-		// retrieve extractor observable from filePath
-		let extractor$ = extractorFunction(filePath);
-		// buffer the observable to collect 99 at a time
-=======
-	addExtractors(extractorFunction, filepath, collection) {
-		// retrieve extractor observable from filepath
-		let extractor$ = extractorFunction(filepath, collection);
-
+		// retrieve extractor observable from connectStrOrFilePath
+		let extractor$ = extractorFunction(connectStrOrFilePath, collection);
 		// buffer the observable to collect 1000 at a time
->>>>>>> 7c0be4b87d0000e4aad4ea1c956ab1b10fd87ac9
 		extractor$ = extractor$.pipe(bufferCount(1000, 1000));
 		// validate extractor$. If not valid, then reset Etl's state and throw error
 		if (!(extractor$ instanceof Observable)) {
