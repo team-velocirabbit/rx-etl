@@ -158,17 +158,24 @@ app.get('/etlPg', (req, res) => {
 
 app.get('/test', (req, res) => {
 
-	// new testEtl()
-	// 	.addExtractors(extract.fromCSV, 'MOCK_DATA.csv')
-	// 	.addTransformers(combineNames)
-	// 	.addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-	// 	.combine()																											
-	// 	.start()
+const filePath = '/Users/tkachler/Desktop';
+const fileName = 'output.xml';
 
-	const etl = new testEtl()
-		.simple('MOCK_DATA.csv', combineNames, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-		.combine()
+
+	new testEtl()
+		.addExtractors(extract.fromXML, 'MOCK_DATA.xml')
+		.addTransformers(combineNames)
+		.addLoaders(load.toXML)
+		.combine()																										
 		.start()
+
+				// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+
+
+	// const etl = new testEtl()
+	// 	.simple('MOCK_DATA.csv', [combineNames], __dirname, 'pleasework.csv')
+	// 	.combine()
+	// 	.start()
 
 	res.sendStatus(200);
 });
