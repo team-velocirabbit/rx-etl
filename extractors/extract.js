@@ -7,6 +7,7 @@ const conStrParse = require('connection-string');
 const csv = require('csv-parser');
 const fs = require('file-system');
 const now = require('performance-now');
+const JSONStream = require('JSONStream');
 
 // An object containing all the extract methods
 const extract = {};
@@ -51,11 +52,9 @@ extract.fromJSON = (filePath) => {
 
   // Return an observable containing the JSON data
   return Observable.create((observer) => {
-    const data = fs.createReadStream(filePath, { encoding: 'utf-8' });
-    data.on('error', () => { throw new Error('Error: there was an error reading the extract file.'); });
+    const data = fs.createReadStream(filePath, { flags: 'r', encoding: 'utf-8' }).pipe(JSONStream.parse('*'));
     data.on('data', chunk => observer.next(chunk));
     data.on('end', () => observer.complete());
-
     // Closing the stream
     return () => data.pause();
   });

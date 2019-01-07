@@ -1,6 +1,7 @@
 const { Observable, Subject, of, from, fromEvent } = require('rxjs');
 const { create, concat, map, takeUntil } = require('rxjs/operators');
 const readline = require('readline');
+const scheduler = require('node-schedule');
 
 // TESTING LIBRARY 123123123123 
 const testEtl = require('./Etl');
@@ -160,28 +161,12 @@ app.get('/test', (req, res) => {
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
 
-	// Testing fromPostgres => toXML
-	// Object for sending SendGrid email notifications
-	const emailMessage = {
-		to: 'kachler@mac.com',
-		from: 'kachler@mac.com',
-		subject: 'Your RX-ETL job has finished',
-		text: 'Your RX-ETL job has finished',
-		html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-	};
-
-	const textMessage = {
-    to: '6193095463',
-    body: 'Your RX-ETL job has finished',
-	}
-
 	new testEtl()
-	  // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
-		.addExtractors(extract.fromPostgres, 'postgres://pssshksz:Wh0grf6b-steQ88Dl0EIqk06siRpayld@pellefant.db.elephantsql.com:5432/pssshksz?ssl=true', 'test')
+		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
 		.addTransformers(combineNames)
-		.addLoaders(load.toXML, fileName, filePath)
-		// .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-		.combine()
+		.addLoaders(load.toXML, 'josie.xml')
+		.combine()		
+		.addSchedule('1aaaa * * * * *')																								
 		.start()
 		.addEmailNotification(emailMessage)
 		.addTextNotification(textMessage)
