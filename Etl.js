@@ -42,7 +42,7 @@ class Etl {
 	 * Collects extractor$ and adds it in Etl's state
 	 * 
 	 * @param {Observable} extractorFunction - extract function that streams data from input source
-	 * @param {string} filePathOrCollection - file path of the extract file OR collection name of db
+	 * @param {string} connectStrOrFilePath - file path of the extract file OR collection name of db
 	 * @returns {this}
 	 */
 	addExtractors(extractorFunction, connectStrOrFilePath, collection) {
