@@ -45,12 +45,6 @@ class Etl {
 	 * @param {string} filePath - The file path of the extract file
 	 * @returns {this}
 	 */
-<<<<<<< HEAD
-	addExtractors(extractorFunction, filepath, collection) {
-		// retrieve extractor observable from filepath
-		let extractor$ = extractorFunction(filepath, collection);
-
-=======
 	addExtractors(extractorFunction, filePath) {
 		// check to see that extract function matches filePath extension
 		const type = invert(extract)[extractorFunction].substring(4).toLowerCase();
@@ -61,7 +55,6 @@ class Etl {
 		}
 		// retrieve extractor observable from filePath
 		let extractor$ = extractorFunction(filePath);
->>>>>>> 0de920b9ab5484a297e2e7a138fd9b43c0f1cfc3
 		// buffer the observable to collect 99 at a time
 		extractor$ = extractor$.pipe(bufferCount(1000, 1000));
 		// validate extractor$. If not valid, then reset Etl's state and throw error
@@ -186,20 +179,6 @@ class Etl {
 	 * @param {boolean} startNow - Value that indicates whether user wants job started right away or not
 	 * @returns {string} message - send back a message declaring success or failure
 	 */
-<<<<<<< HEAD
-	start() {
-		if (this.observable$ === null) 
-			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
-		let message = '';
-		// close the database connection upon completion, return error if error is thrown
-		this.observable$.subscribe(	
-			null, 
-			(err) => console.error('Error: unable to start etl process.\n', err),
-			null
-		);
-		// return 'Successfully Completed';
-		return this;
-=======
 	start(startNow = true) {
 		// validate arguments passed in to method
 		if (typeof startNow !== 'boolean') {
@@ -237,8 +216,8 @@ class Etl {
 				null
 			);
 		}
-		return 'Successfully Completed';
->>>>>>> 0de920b9ab5484a297e2e7a138fd9b43c0f1cfc3
+		// return 'Successfully Completed';
+		return this;
 	}
 
 	/**
