@@ -15,10 +15,10 @@ const extract = {};
  */
 extract.fromCSV = (filePath) => {
   // Check if a file path was passed into the function
-  if (filePath === undefined) return console.error('ERROR: A file path does not appear to have been passed.\n');
+  if (filePath === undefined) throw new Error('A file path does not appear to have been passed.\n');
 
   // Check if the file extension is CSV
-  if (!fileExtension(filePath).toLowerCase() === 'csv') return console.error('ERROR: File does not appear to be CSV.\n');
+  if (!fileExtension(filePath).toLowerCase() === 'csv') throw new Error('File does not appear to be CSV.\n');
 
   // Return an observable containing the CSV data
   return Observable.create((observer) => {
@@ -40,17 +40,16 @@ extract.fromCSV = (filePath) => {
  */
 extract.fromJSON = (filePath) => {
   // Check if a file path was passed into the function
-  if (filePath === undefined) return console.error('ERROR: A file path does not appear to have been passed.\n');
+  if (filePath === undefined) throw new Error('A file path does not appear to have been passed.\n');
 
   // Check if the file extension is JSON
-  if (!fileExtension(filePath).toLowerCase() === 'json') return console.error('ERROR: File does not appear to be JSON.\n');
+  if (!fileExtension(filePath).toLowerCase() === 'json') throw new Error('File does not appear to be JSON.\n');
 
   // Return an observable containing the XML data
   return Observable.create((observer) => {
     const data = fs.createReadStream(filePath, { flags: 'r', encoding: 'utf-8' }).pipe(JSONStream.parse('*'));
     data.on('data', chunk => observer.next(chunk));
     data.on('end', () => observer.complete());
- 
     // Closing the stream
     return () => data.pause();
   });
@@ -64,10 +63,10 @@ extract.fromJSON = (filePath) => {
  */
 extract.fromXML = (filePath) => {
   // Check if a file path was passed into the function
-  if (filePath === undefined) return console.error('ERROR: A file path does not appear to have been passed.\n');
+  if (filePath === undefined) throw new Error('A file path does not appear to have been passed.\n');
  
   // Check if the file extension is XML
-  if (!fileExtension(filePath).toLowerCase() === 'xml') return console.error('ERROR: File does not appear to be JSON.\n');
+  if (!fileExtension(filePath).toLowerCase() === 'xml') throw new Error('File does not appear to be JSON.\n');
 
   return Observable.create((observer) => {
     

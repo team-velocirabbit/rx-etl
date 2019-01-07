@@ -45,7 +45,7 @@ class Etl {
 		const fileExt = fileExtension(filePath).toLowerCase();
 		if (type !== fileExt) {
 			this.reset();
-			return console.error("Error: please make sure extract function matches file type! \n");
+			throw new Error("please make sure extract function matches file type! \n");
 		}
 		// retrieve extractor observable from filePath
 		let extractor$ = extractorFunction(filePath);
@@ -54,7 +54,7 @@ class Etl {
 		// validate extractor$. If not valid, then reset Etl's state and throw error
 		if (!(extractor$ instanceof Observable)) {
 			this.reset();
-			return console.error("Error: extractor function invalid\n See docs for more details.\n");
+			throw new Error("extractor function invalid\n See docs for more details.\n");
 		} else {
 			this.extractor$ = extractor$;
 		}
@@ -64,7 +64,7 @@ class Etl {
 	/**
 	 * Collects transformer(s) and stores it in the state of Etl
 	 * 
-	 * @param {function} transformers - array of functions that transform the source data
+	 * @param {array} transformers - array of functions that transform the source data
 	 * @returns {this}
 	 */
 	addTransformers(...transformers) {
@@ -72,7 +72,7 @@ class Etl {
 		for (let i = 0; i < transformers.length; i += 1) {
 			if (!(transformers[i] instanceof Function)) {
 				this.reset();
-				return console.error("Error: transformer functions must be of class 'Transformers'\n See docs for more details.\n")
+				throw new Error("transformer functions must be of class 'Transformers'\n See docs for more details.\n")
 			} else {
 				this.transformers.push(transformers[i]);
 			}
@@ -94,7 +94,7 @@ class Etl {
 		// validate params. If not valid, then reset the Etl's state and throw error
 		if (!(loader instanceof Function)) {
 			this.reset();
-			return console.error("Error: loader functions must be of class 'Loaders'\n See docs for more details.\n")
+			throw new Error("loader functions must be of class 'Loaders'\n See docs for more details.\n")
 		} else {
 			// get either CSV, XML, JSON, MONGODB, POSTGRES from name of function
 			type = invert(load)[loader].substring(2).toLowerCase();
@@ -104,7 +104,7 @@ class Etl {
 			((typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) || 
 			(typeof collectionNameOrFileName !== 'string' || collectionNameOrFileName.length === 0))) {
 				this.reset();
-				return console.error("Error: database loaders must provide connection string AND collection / table name in the parameter!\n");
+				throw new Error("database loaders must provide connection string AND collection / table name in the parameter!\n");
 		} else if (type === 'mongodb' || type === 'postgres') {
 			this.type = 'db'
 			this.connectionString = connectStrOrFilePath;
@@ -115,18 +115,18 @@ class Etl {
 			((connectStrOrFilePath && typeof connectStrOrFilePath !== 'string') 
 			|| (collectionNameOrFileName && typeof collectionNameOrFileName !== 'string'))) {
 				this.reset();
-				return console.error("Error: flatfile loaders must provide valid output file path and/or file name!\n");
+				throw new Error("flatfile loaders must provide valid output file path and/or file name!\n");
 		} else if (type === 'csv' || type === 'xml' || type === 'json') {
 			// make sure appropriate output file was provided if given one (and not the default 'etl_output')
 			if (collectionNameOrFileName && (collectionNameOrFileName !== 'etl_output')) {
 				if (type === 'csv' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'csv') {
-					return console.error("Error: loading to csv requires output file to be of type '.csv'!\n")
+					throw new Error("loading to csv requires output file to be of type '.csv'!\n")
 				}
 				if (type === 'xml' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'xml') {
-					return console.error("Error: loading to xml requires output file to be of type '.xml'!\n")
+					throw new Error("loading to xml requires output file to be of type '.xml'!\n")
 				}
 				if (type === 'json' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'json') {
-					return console.error("Error: loading to json requires output file to be of type '.json'!\n")
+					throw new Error("loading to json requires output file to be of type '.json'!\n")
 				}
 			}
 			this.type = 'flatfile';
@@ -147,10 +147,9 @@ class Etl {
 	combine() {
 		// ensure that a previous Etl process (an Observable) does not exist, and if so, throw an error
 		if (this.observable$ !== null) 
-			return console.error('Error: Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
+			throw new Error('Failed to combine. Please make sure previous ETL process does not exist and try using the .reset() method\n');
 		// create a new observable from the extractor$ observable, and complete the extractor$ observable
 		this.observable$ = this.extractor$;
-		
 		// pipe each event through a transformer function
 		for (let i = 0; i < this.transformers.length; i += 1) {
 			this.observable$ = this.observable$.pipe(map(data => {
@@ -164,31 +163,52 @@ class Etl {
 			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.outputFilePath, this.outputFileName, this.initialWrite++)));
 		} else if (this.type === 'db') {
 			this.observable$ = this.observable$.pipe(map(data => this.loader(data, this.connectionString, this.collectionName)));
-		}		
+		}
 		return this;
 	}
 
 	/**
 	 * Subscribes to the Observable stored in Etl's state that encapsulates the entire Etl process
 	 * 
+	 * @param {boolean} startNow - Value that indicates whether user wants job started right away or not
 	 * @returns {string} message - send back a message declaring success or failure
 	 */
-	start() {
-		if (this.observable$ === null) 
-			return console.error('Error: Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
+	start(startNow = true) {
+		// validate arguments passed in to method
+		if (typeof startNow !== 'boolean') {
+			throw new Error("invalid arg to .start() method! Please make sure arg is type 'boolean'!\n");
+		}
+		// check to make sure user invoked .combine() before invoking start method
+		if (this.observable$ === null) {
+			throw new Error('Failed to start. Please make sure extractors, transformers, loaders were added and combined using the .combine() method.\n');
+		}
+		// check if a schedule has been designated for job
+		if (this.cronList.length !== 0) {
+			// schedule job and store scheduled job in Etl's state, so that it's accessible to cancel/modify
+			this.cronList.forEach(cron => {
+				const job = scheduler.scheduleJob(
+					cron, 
+					() => {
+						// reset initialWrite so that it overwrites file
+						this.initialWrite = 0;
 
-		if (this.schedule.length === 0) {
-			// close the database connection upon completion, return error if error is thrown
+						this.observable$.subscribe(	
+							null, 
+							(err) => { throw new Error('unable to start etl process.\n', err) },
+							null
+						)
+					}
+				);
+				this.schedule.push(job);
+			});
+		}
+		// start job by default unless user specifies otherwise
+		if ((startNow && this.cronList.length !== 0) || this.cronList.length === 0) {
 			this.observable$.subscribe(	
 				null, 
-				(err) => console.error('Error: unable to start etl process.\n', err),
+				(err) => { throw new Error('unable to start etl process.\n', err) },
 				null
 			);
-		}
-		else {
-			this.schedule.forEach(cron => {
-
-			})
 		}
 		return 'Successfully Completed';
 	}
@@ -214,12 +234,12 @@ class Etl {
 	 */
 	simple(extractString, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
 		// validate input
-		if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0)
-			return console.error('Error: first parameter of simple() must be a string and cannot be empty!');
+		if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0) 
+			throw new Error('first parameter of simple() must be a string and cannot be empty!');
 		if (callback === undefined || !callback instanceof Array) 
-			return console.error('Error: second parameter of simple() must be a function and cannot be empty!');
+			throw new Error('second parameter of simple() must be a function and cannot be empty!');
 		if (connectStrOrFilePath === undefined || typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) 
-			return console.error('Error: third parameter of simple() must be a string and cannot be empty!');
+			throw new Error('third parameter of simple() must be a string and cannot be empty!');
 		// add valid callbacks to the list of transformers in state
 		callback.forEach(cb => this.transformers.push(cb));
 		/* EXTRACT: check extractString to choose appropriate extractor */
@@ -230,7 +250,7 @@ class Etl {
 		this.extractor$ = this.extractor$.pipe(bufferCount(1000, 1000));
 		// make sure user specifies output filename to be able to add appropriate loader
 		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'etl_output') {
-			return console.error("Error: to use simple, please specify output file name ending in: '.csv', '.xml', '.json'!\n");
+			throw new Error("to use simple, please specify output file name ending in: '.csv', '.xml', '.json'!\n");
 		}
 		// LOAD: check input to load to appropriate output source
 		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'csv') this.loader = load.toCSV;
@@ -250,20 +270,21 @@ class Etl {
 	}
 
 	/**
-	 * Aggregate shedules for job in an array in ETL's state
+	 * Aggregate schedules for job in an array in Etl's state
 	 * 
 	 * @returns {this}
 	 */
 	addSchedule(...cron) {
 		// validate each cron and store it in state
 		for (let i = 0; i < cron.length; i += 1) {
-  		let parsedCron = cron[i].split(' ');
-  		if (parsedCron.length !== 5) return console.error('Error: cron format is invalid! \n');
-  		parsedCron = parsedCron.join(' ').replace(/[*0-9]/g, '').trim();
-  		if (parsedCron.length !== 0) return console.error('Error: cron format is invalid. \n');
-  		this.cronList.push(cron[i]);
+			let parsedCron = cron[i].split(' ');
+			if (parsedCron.length < 5 || parsedCron.length < 6) throw new Error('cron format is invalid! \n');
+			parsedCron = parsedCron.join(' ').replace(/[*0-9]/g, '').trim();
+			if (parsedCron.length !== 0) throw new Error('cron format is invalid. \n');
+			this.cronList.push(cron[i]);
 		}
 		return this;
 	}
+}
 
 module.exports = Etl;
