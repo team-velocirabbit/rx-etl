@@ -220,6 +220,14 @@ class Etl {
 		this.transformers = [];
 		this.loader = null;
 		this.observable$ = null;
+		this.connectionString = '';
+		this.collectionName = '';
+		this.outputFilePath = '';
+		this.outputFileName = '';
+		this.type = '';
+		this.initialWrite = 0;
+		this.schedule = [];
+		this.cronList = [];
 		return this;
 	}
 
