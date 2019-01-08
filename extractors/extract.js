@@ -86,8 +86,6 @@ extract.fromXML = (filePath) => {
  * @return {Observable} - an observable containing the parsed Mongo collection data
  */
 extract.fromMongoDB = (connectionString, collectionName) => {
-  console.log('Starting fromMongoDB...');
-
   // Capturing start time for performance testing
   const start = now();
 
@@ -155,7 +153,6 @@ extract.fromMongoDB = (connectionString, collectionName) => {
  * @return {Observable} - an observable containing the parsed Postgres table data
  */
 extract.fromPostgres = (connectionString, tableName) => {
-  console.log('Starting fromPostgres...');
 
   // Capturing start time for performance testing
   const start = now();
