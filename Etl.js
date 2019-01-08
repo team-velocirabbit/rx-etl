@@ -8,7 +8,7 @@ const scheduler = require('node-schedule');
 const path = require('path');
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
-require('dotenv').config()
+require('dotenv').load()
 const sgEmail = require('@sendgrid/mail');
 const client = require('twilio')(
   process.env.TWILIO_ACCOUNT_SID,
