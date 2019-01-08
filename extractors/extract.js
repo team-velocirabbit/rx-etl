@@ -153,7 +153,6 @@ extract.fromMongoDB = (connectionString, collectionName) => {
  * @return {Observable} - an observable containing the parsed Postgres table data
  */
 extract.fromPostgres = (connectionString, tableName) => {
-
   // Capturing start time for performance testing
   const start = now();
 
