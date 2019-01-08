@@ -6,9 +6,11 @@ const load = require('../loaders/load');
 
 describe('File: Etl.js', () => {
   let testEtl;
+
   beforeEach(() => {
     testEtl = new Etl();
   });
+
   describe('Method: reset', () => {
     it('Transformers length should equal zero', () => {
       const testFunc = function () { console.log('test'); };

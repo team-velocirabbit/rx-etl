@@ -1,5 +1,4 @@
 const { expect } = require('chai');
-const Etl = require('../Etl');
 const load = require('../loaders/load');
 
 describe('File: load.js', () => {
