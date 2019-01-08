@@ -49,10 +49,14 @@ class Etl {
 		// check to see that extract function matches file path extension
 		const type = invert(extract)[extractorFunction].substring(4).toLowerCase();
 		const fileExt = fileExtension(connectStrOrFilePath).toLowerCase();
-		if ((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) {
+		const dbType = connectionString(connectStrOrFilePath);
+		
+		if (((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) 
+			|| ((type === 'mongodb' || type === 'postgres') && (type !== dbType))) {
 			this.reset();
 			throw new Error("please make sure extract function matches file type! \n");
 		}
+
 		// retrieve extractor observable from connectStrOrFilePath
 		let extractor$ = extractorFunction(connectStrOrFilePath, collection);
 		// buffer the observable to collect 1000 at a time
@@ -73,7 +77,7 @@ class Etl {
 	 * @param {array} transformers - array of functions that transform the source data
 	 * @returns {this}
 	 */
-	addTransformers(...transformers) {
+	addTransformers(transformers) {
 		// validate each transformer function in input array, and store valid functions to Etl's state
 		for (let i = 0; i < transformers.length; i += 1) {
 			if (!(transformers[i] instanceof Function)) {
@@ -90,7 +94,7 @@ class Etl {
 	 * Collects loader function, collection name (if db) or file name (if flatfile), 
 	 * connection string (if db) or file path (if flatfile) and stores it in the Etl's state
 	 * 
-	 * @param {function} loader - one (or many) function(s) that transform the source data
+	 * @param {function} loader - function that loads data to an output source
 	 * @param {string} collectionNameOrFileName - collection name of load db OR file name of output
 	 * @param {string} connectStrOrFilePath - connect string to load db OR file path of output file
 	 * @returns {this}
@@ -104,6 +108,7 @@ class Etl {
 			// get either CSV, XML, JSON, MONGODB, POSTGRES from name of function
 			type = invert(load)[loader].substring(2).toLowerCase();
 		}
+		
 		// makes sure that connectionString and collectionName is provided if loader is to a database
 		if ((type === 'mongodb' || type === 'postgres') && 
 			((typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) || 
@@ -111,7 +116,7 @@ class Etl {
 				this.reset();
 				throw new Error("database loaders must provide connection string AND collection / table name in the parameter!\n");
 		} else if (type === 'mongodb' || type === 'postgres') {
-			this.type = 'db'
+			this.type = 'db';
 			this.connectionString = connectStrOrFilePath;
 			this.collectionName = collectionNameOrFileName ? collectionNameOrFileName : ('etl_output');
 		} 
@@ -250,21 +255,32 @@ class Etl {
 	simple(extractString, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
 		if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0) 
 			throw new Error('first parameter of simple() must be a string and cannot be empty!');
-		if (callback === undefined || !callback instanceof Array) 
+		if (callback === undefined || !(callback instanceof Array)) 
 			throw new Error('second parameter of simple() must be a function and cannot be empty!');
 		if (connectStrOrFilePath === undefined || typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) 
 			throw new Error('third parameter of simple() must be a string and cannot be empty!');
+		if (collectionNameOrFileName !== 'etl_output' && (typeof collectionNameOrFileName !== 'string' || collectionNameOrFileName.length === 0)) 
+			throw new Error('fourth parameter of simple() must be a string!');
 		// add valid callbacks to the list of transformers in state
 		callback.forEach(cb => this.transformers.push(cb));
 		/* EXTRACT: check extractString to choose appropriate extractor */
 		if (fileExtension(extractString).toLowerCase() === 'csv') this.extractor$ = extract.fromCSV(extractString);
 		if (fileExtension(extractString).toLowerCase() === 'json') this.extractor$ = extract.fromJSON(extractString);
 		if (fileExtension(extractString).toLowerCase() === 'xml') this.extractor$ = extract.fromXML(extractString);
+		if (connectionString(connectStrOrFilePath).protocol === 'mongodb') this.extractor$ = extract.fromMongoDB(extractString, collectionNameOrFileName);
+		if (connectionString(connectStrOrFilePath).protocol === 'postgres') this.extractor$ = extract.fromPostgres(extractString, collectionNameOrFileName);
 		// buffer the observable to collect 99 at a time
 		this.extractor$ = this.extractor$.pipe(bufferCount(1000, 1000));
+		let type = invert(load)[loader].substring(2).toLowerCase();
 		// make sure user specifies output filename to be able to add appropriate loader
-		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'etl_output') {
-			throw new Error("to use simple, please specify output file name ending in: '.csv', '.xml', '.json'!\n");
+		if ((type === 'csv' || type === 'json' || type === 'xml') 
+			&& fileExtension(collectionNameOrFileName).toLowerCase() === 'etl_output') {
+			throw new Error("please specify output file name ending in: '.csv', '.xml', '.json'!\n");
+		}
+		if ((type === 'mongodb' || type === 'postgres') 
+			&& (connectionString(connectStrOrFilePath).protocol !== 'mongodb' 
+			&& connectionString(connectStrOrFilePath).protocol !== 'postgres')) {
+			throw new Error("please specify connection string if trying to connect to database!\n");
 		}
 		// LOAD: check input to load to appropriate output source
 		if (fileExtension(collectionNameOrFileName).toLowerCase() === 'csv') this.loader = load.toCSV;
