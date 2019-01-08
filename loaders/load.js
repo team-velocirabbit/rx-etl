@@ -19,6 +19,8 @@ const load = {};
 load.toCSV = (data, filePath, fileName, initialWrite) => {
   // Check if data parameter is empty
   if (data.length === 0) throw new Error('No data was passed into the load method! \n');
+  // Check if the file extension is CSV
+  if (fileExtension(fileName).toLowerCase() !== 'csv') throw new Error('File does not appear to be CSV.\n');
   const outputFile = filePath + '/' + fileName;
   const writer = csvWriter();
   if (initialWrite === 0) writer.pipe(fs.createWriteStream(outputFile));
@@ -42,9 +44,9 @@ load.toCSV = (data, filePath, fileName, initialWrite) => {
 load.toJSON = (data, filePath, fileName, initialWrite) => {
   // Check if data paramenter is empty
   if (data.length === 0) throw new Error('No data was passed into the load method! \n');
-  const outputFile = filePath + '/' + fileName;
   // Check if the file extension is JSON
-  if (!fileExtension(fileName).toLowerCase() === 'json') throw new Error('File does not appear to be JSON.\n');
+  if (fileExtension(fileName).toLowerCase() !== 'json') throw new Error('File does not appear to be JSON.\n');
+  const outputFile = filePath + '/' + fileName;
   if (initialWrite === 0) fs.writeFile(outputFile, JSON.stringify(data, null, '\t'), (err) => {
     if (err) throw new Error('There was an issue writing data to the JSON file. ', err);
   });
@@ -67,7 +69,7 @@ load.toXML = (data, filePath, fileName, initialWrite) => {
   // Check if data paramenter is empty
   if (data.length === 0) throw new Error('No data was passed into the load method! \n');
   // Check if the file extension is XML
-  if (!fileExtension(fileName).toLowerCase() === 'xml') throw new Error('File does not appear to be XML.\n');
+  if (fileExtension(fileName).toLowerCase() !== 'xml') throw new Error('File does not appear to be XML.\n');
   const xmlData = js2xmlparser.parse("dataset", data);
   const outputFile = filePath + '/' + fileName;
   if (initialWrite === 0) fs.writeFile(outputFile, xmlData, (err) => {
