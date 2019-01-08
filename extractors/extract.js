@@ -20,10 +20,10 @@ const extract = {};
  */
 extract.fromCSV = (filePath) => {
   // Check if a file path was passed into the function
-  if (filePath === undefined) throw new Error('ERROR: A file path does not appear to have been passed.\n');
+  if (filePath === undefined) throw new Error('A file path does not appear to have been passed.\n');
 
   // Check if the file extension is CSV
-  if (!fileExtension(filePath).toLowerCase() === 'csv') throw new Error('ERROR: File does not appear to be CSV.\n');
+  if (fileExtension(filePath).toLowerCase() !== 'csv') throw new Error('File does not appear to be CSV.\n');
 
   // Return an observable containing the CSV data
   return Observable.create((observer) => {
@@ -48,7 +48,7 @@ extract.fromJSON = (filePath) => {
   if (filePath === undefined) throw new Error('ERROR: A file path does not appear to have been passed.\n');
 
   // Check if the file extension is JSON
-  if (!fileExtension(filePath).toLowerCase() === 'json') throw new Error('ERROR: File does not appear to be JSON.\n');
+  if (fileExtension(filePath).toLowerCase() !== 'json') throw new Error('File does not appear to be JSON.\n');
 
   // Return an observable containing the JSON data
   return Observable.create((observer) => {
@@ -71,7 +71,7 @@ extract.fromXML = (filePath) => {
   if (filePath === undefined) throw new Error('ERROR: A file path does not appear to have been passed.\n');
 
   // Check if the file extension is XML
-  if (!fileExtension(filePath).toLowerCase() === 'xml') throw new Error('ERROR: File does not appear to be JSON.\n');
+  if (fileExtension(filePath).toLowerCase() !== 'xml') throw new Error('File does not appear to be XML.\n');
 
   return Observable.create((observer) => {
     // Add smart stuff here...
@@ -95,14 +95,14 @@ extract.fromMongoDB = (connectionString, collectionName) => {
   const bSize = 10000;
 
   // Check if a file path was passed into the function
-  if (connectionString === '') throw new Error('Error: You must provide a valid connection string!');
+  if (connectionString === '') throw new Error('You must provide a valid connection string!');
 
   // Check if the connection string uses the Mongo protocol
   const conStrObj = conStrParse(connectionString);
-  if (conStrObj.protocol !== 'mongodb') throw new Error('Error: Connection string does not appear to use the Mongo protocol!');
+  if (conStrObj.protocol !== 'mongodb') throw new Error('Connection string does not appear to use the Mongo protocol!');
 
   // Check if a collection name was passed into the function
-  if (collectionName === '') throw new Error('Error: You must provide a valid collection name!');
+  if (collectionName === '') throw new Error('You must provide a valid collection name!');
 
   // Create a new observable
   return Observable.create((observer) => {
@@ -161,14 +161,14 @@ extract.fromPostgres = (connectionString, tableName) => {
   const start = now();
 
   // Check if a file path was passed into the function
-  if (connectionString === '') throw new Error('Error: You must provide a valid connection string!');
+  if (connectionString === '') throw new Error('You must provide a valid connection string!');
 
   // Check if the connection string uses the Mongo protocol
   const conStrObj = conStrParse(connectionString);
-  if (conStrObj.protocol !== 'postgres') throw new Error('Error: Connection string does not appear to use the Postgres protocol!');
+  if (conStrObj.protocol !== 'postgres') throw new Error('Connection string does not appear to use the Postgres protocol!');
 
   // Check if a collection name was passed into the function
-  if (tableName === '') throw new Error('Error: You must provide a valid table name!');
+  if (tableName === '') throw new Error('You must provide a valid table name!');
 
   // Create a new observable
   return Observable.create((observer) => {
