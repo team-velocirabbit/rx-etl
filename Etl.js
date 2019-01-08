@@ -352,4 +352,8 @@ class Etl {
 	}
 }
 
+test() {
+	//Do something
+}
+
 module.exports = Etl;
