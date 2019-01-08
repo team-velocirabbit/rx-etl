@@ -6,7 +6,6 @@ const scheduler = require('node-schedule');
 // TESTING LIBRARY 123123123123 
 const testEtl = require('./Etl');
 const extract = require('./extractors/extract');
-const transform = require('./transformers/transform');
 const load = require('./loaders/load');
 
 //******************** */
@@ -161,7 +160,7 @@ app.get('/test', (req, res) => {
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
 const emailMessage = {
-	to: 'kachler@gmail.com',
+	to: 'jaelee213@gmail.com',
 	from: 'kachler@gmail.com',
 	subject: 'RX-ETL job completed',
 	text: 'Your RX-ETL job has finished.',
@@ -176,7 +175,7 @@ const textMessage = {
 	new testEtl()
 		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
  // .addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
-		.addTransformers(combineNames)
+		.addTransformers([combineNames])
 		.addLoaders(load.toXML, 'josie.xml')
 		.combine()		
 		.addSchedule('1 * * * * *')																								
