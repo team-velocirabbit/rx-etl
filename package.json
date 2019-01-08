@@ -17,7 +17,7 @@
     "connection-string": "^1.0.1",
     "csv-parser": "^2.1.0",
     "csv-write-stream": "2.0.0",
-    "dotenv": "6.2.0",
+    "dotenv": "^6.2.0",
     "etl": "^0.5.13",
     "express": "^4.16.4",
     "file-extension": "^4.0.5",
