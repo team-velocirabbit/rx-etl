@@ -350,10 +350,11 @@ class Etl {
 		}
 		return this;
 	}
+
+	test() {
+		//Do something
+	}
 }
 
-test() {
-	//Do something
-}
 
 module.exports = Etl;
