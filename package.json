@@ -1,13 +1,13 @@
 {
   "name": "rxjs-etl",
   "version": "0.0.1",
-  "description": "",
+  "description": "ETL tool using RxJs Observables",
   "main": "Etl.js",
   "scripts": {
     "start": "nodemon main.js",
     "test": "mocha ./tests"
   },
-  "author": "",
+  "author": "team-velocirabbit",
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "6.3.1",
@@ -42,5 +42,21 @@
   "devDependencies": {
     "chai": "4.2.0",
     "mocha": "5.2.0"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/team-velocirabbit/rx-etl.git"
+  },
+  "keywords": [
+    "etl",
+    "node",
+    "rxjs"
+  ],
+  "bugs": {
+    "url": "https://github.com/team-velocirabbit/rx-etl/issues"
+  },
+  "homepage": "https://github.com/team-velocirabbit/rx-etl#readme"
 }

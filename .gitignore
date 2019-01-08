@@ -1,3 +1,8 @@
 node_modules
 main.js
 .env
+MOCK_DATA_SHORT.csv
+MOCK_DATA.csv
+MOCK_DATA.xml
+MOCK_DATA.json
+test.csv
