@@ -7,7 +7,7 @@ require('dotenv').config;
 describe('File: extract.js', () => {
   describe('Method: fromCSV', () => {
     it('Should throw an error if no file path string is passed in', () => {
-      expect(() => extract.fromCSV().to.throw('A file path does not appear to have been passed.'));
+      expect(() => extract.fromCSV()).to.throw('A file path does not appear to have been passed.');
     });
     it('Passing a file extension other than CSV should throw an error', () => {
       expect(() => extract.fromCSV('MOCK_DATA.json')).to.throw('File does not appear to be CSV.');
@@ -20,7 +20,7 @@ describe('File: extract.js', () => {
 
   describe('Method: fromJSON', () => {
     it('Should throw an error if no file path string is passed in', () => {
-      expect(() => extract.fromJSON().to.throw('A file path does not appear to have been passed.'));
+      expect(() => extract.fromJSON()).to.throw('A file path does not appear to have been passed.');
     });
     it('Passing a file extension other than JSON should throw an error', () => {
       expect(() => extract.fromJSON('MOCK_DATA.csv')).to.throw('File does not appear to be JSON.');
@@ -33,7 +33,7 @@ describe('File: extract.js', () => {
 
   describe('Method: fromXML', () => {
     it('Should throw an error if no file path string is passed in', () => {
-      expect(() => extract.fromXML().to.throw('A file path does not appear to have been passed.'));
+      expect(() => extract.fromXML()).to.throw('A file path does not appear to have been passed.');
     });
     it('Passing a file extension other than XML should throw an error', () => {
       expect(() => extract.fromXML('MOCK_DATA.csv')).to.throw('File does not appear to be XML.');
