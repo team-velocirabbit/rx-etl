@@ -159,30 +159,53 @@ app.get('/test', (req, res) => {
 
 const filePath = '/Users/tkachler/Desktop';
 const fileName = 'output.xml';
+
 const emailMessage = {
 	to: 'jaelee213@gmail.com',
 	from: 'kachler@gmail.com',
-	subject: 'RX-ETL job completed',
+	subject: 'Your second job has completed',
 	text: 'Your RX-ETL job has finished.',
 	html: '<strong>and easy to do anywhere, even with Node.js</strong>',
 };
 
 const textMessage = {
 	to: '6193095463',
-  body: 'Your RX-ETL job has finished.',
+  body: 'Your second job has finished.',
 }
 
-	new testEtl()
-		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
- // .addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+const email = {
+	to: 'jaelee213@gmail.com',
+	from: 'kachler@gmail.com',
+	subject: 'First job has finished',
+	text: 'Your RX-ETL job has finished.',
+	html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+};
+
+const text = {
+	to: '6193095463',
+  body: 'Your first job has finished',
+}
+
+
+
+	const test2 = new testEtl()
+		.addExtractors(extract.fromJSON, 'idontexist.json')
 		.addTransformers([combineNames])
-		.addLoaders(load.toXML, 'josie.xml')
+		.addLoaders(load.toXML, 'iexist.xml')
 		.combine()		
-		.addSchedule('1 * * * * *')																								
+		.addSchedule('10 * * * * *')																								
 		.addEmailNotification(emailMessage)
 		.addTextNotification(textMessage)
-		.start()
 
+	const test1 = new testEtl()
+		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
+		.addTransformers([function (data) { return data }])
+		.addLoaders(load.toJSON, 'idontexist.json')
+		.combine()
+		.addEmailNotification(email)
+		.addTextNotification(text)
+		.next(test2)
+		.start()
 
 
 
