@@ -1,6 +1,6 @@
 {
-  "name": "not-my-fault",
-  "version": "0.1.0",
+  "name": "rxjs-etl",
+  "version": "0.0.1",
   "description": "",
   "main": "Etl.js",
   "scripts": {
