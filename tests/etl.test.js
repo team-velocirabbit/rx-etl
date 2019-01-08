@@ -21,10 +21,6 @@ describe('File: Etl.js', () => {
     });
   });
   
-<<<<<<< HEAD
-
-
-=======
   describe('Method: addSchedule', () => {
     const cronTime = '100 * *';
     it('Should throw an error if an invalid cron format is passed', () => {
@@ -100,5 +96,4 @@ describe('File: Etl.js', () => {
         .to.throw('first parameter of simple() must be a string and cannot be empty!');
     });
   });
->>>>>>> f50ceffd2500414c1327e08aeb2ae5bb0644270f
 });
