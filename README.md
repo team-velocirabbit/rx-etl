@@ -24,7 +24,6 @@ npm install rxjs-etl
 ```
 
 ## Usage
-
 Require the RxJS-ETL library in the desired file to make is accessible
 
 ```
@@ -44,5 +43,4 @@ Sample configuration .csv -> mongodb
 		.next(task2)
 		.start()
  ```
-
 ## Extract
