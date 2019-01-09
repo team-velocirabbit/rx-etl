@@ -5,7 +5,7 @@
   "main": "Etl.js",
   "scripts": {
     "commit": "git-cz",
-    "start": "nodemon main.js",
+    "start": "node main.js",
     "test": "mocha ./tests",
     "semantic-release": "semantic-release"
   },

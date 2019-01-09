@@ -28,49 +28,49 @@ MongoClient.connect('mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl
 const app = express();
 const PORT = 3000;
 
-// const chooseMockFile = (req, res, next) => {
-// 	res.locals.filename = 'MOCK_DATA.csv';
-// 	res.locals.type = 'csv';
-// 	collection = csvCollection;
-// 	return next();
-// };
+const chooseMockFile = (req, res, next) => {
+	res.locals.filename = 'MOCK_DATA.csv';
+	res.locals.type = 'csv';
+	collection = csvCollection;
+	return next();
+};
 
-// const chooseMockFilePg = (req, res, next) => {
-// 	res.locals.filename = 'MOCK_DATA.csv';
-// 	res.locals.type = 'csv';
-// 	return next();
-// };
+const chooseMockFilePg = (req, res, next) => {
+	res.locals.filename = 'MOCK_DATA.csv';
+	res.locals.type = 'csv';
+	return next();
+};
 
-// const chooseTestFile = (req, res, next) => {
-// 	res.locals.filename = 'test.csv';
-// 	return next();
-// };
+const chooseTestFile = (req, res, next) => {
+	res.locals.filename = 'test.csv';
+	return next();
+};
 
-// const extractCsv = (sourceType, file) => {
-// 	return Observable.create(observer => {
-// 		let file$; 
-// 		if (sourceType === 'csv') file$ = fs.createReadStream(file).pipe(csv());
-// 		if (sourceType === 'json') file$ = file;
+const extractCsv = (sourceType, file) => {
+	return Observable.create(observer => {
+		let file$; 
+		if (sourceType === 'csv') file$ = fs.createReadStream(file).pipe(csv());
+		if (sourceType === 'json') file$ = file;
 
-// 		file$.on('data', chunk => observer.next(chunk));
-// 		file$.on('end', () => observer.complete());
+		file$.on('data', chunk => observer.next(chunk));
+		file$.on('end', () => observer.complete());
 
-// 		// close the stream 
-// 		return () => file$.pause();
-// 	});
-// };
+		// close the stream 
+		return () => file$.pause();
+	});
+};
 
-// // returns an observable
-// const transformObservable = (fileReader$, ...transformFunc) => {
-// 	for (let i = 0; i < transformFunc.length; i += 1) {
-// 		fileReader$ = fileReader$.pipe(map(data => transformFunc[i](data)));
-// 	}
-// 	return fileReader$;
-// };
+// returns an observable
+const transformObservable = (fileReader$, ...transformFunc) => {
+	for (let i = 0; i < transformFunc.length; i += 1) {
+		fileReader$ = fileReader$.pipe(map(data => transformFunc[i](data)));
+	}
+	return fileReader$;
+};
 
-// const storeInMongo = (data) => {
-// 	return collection.insertOne(data);
-// };
+const storeInMongo = (data) => {
+	return collection.insertOne(data);
+};
 
 const storeInPg = (data) => {
 	// const query = 'INSERT INTO test ("full_name", "email_address", "password", "phone", "street_address", "city", "postal_code", "country") VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
@@ -95,18 +95,18 @@ const combineNames = (data) => {
 	return nd;
 };
 
-// const jsonToCsv = (req, res, next) => {
-// 	res.locals.filename = fs.createReadStream('MOCK_DATA.json', { flags: 'r', encoding: 'utf-8' }).pipe(JSONStream.parse('*'));
-// 	res.locals.type = 'json';	
-// 	collection = jsonCollection;
-// 	return next();
-// };
+const jsonToCsv = (req, res, next) => {
+	res.locals.filename = fs.createReadStream('MOCK_DATA.json', { flags: 'r', encoding: 'utf-8' }).pipe(JSONStream.parse('*'));
+	res.locals.type = 'json';	
+	collection = jsonCollection;
+	return next();
+};
 
-// const csvToMongo = async (req, res, next) => {
-// 	const fileReader$ = extractCsv(res.locals.type, res.locals.filename);
-// 	res.locals.data = transformObservable(fileReader$, combineNames, storeInMongo);
-// 	return next();
-// };
+const csvToMongo = async (req, res, next) => {
+	const fileReader$ = extractCsv(res.locals.type, res.locals.filename);
+	res.locals.data = transformObservable(fileReader$, combineNames, storeInMongo);
+	return next();
+};
 
 const csvToPg = (req, res, next) => {
 	const fileReader$ = extractCsv(res.locals.type, res.locals.filename);
@@ -114,15 +114,15 @@ const csvToPg = (req, res, next) => {
 	return next();
 };
 
-// app.get('/csvToMongo', chooseMockFile, csvToMongo, (req, res) => {
-// 	res.locals.data.subscribe();
-// 	res.sendStatus(200);
-// });
+app.get('/csvToMongo', chooseMockFile, csvToMongo, (req, res) => {
+	res.locals.data.subscribe();
+	res.sendStatus(200);
+});
 
-// app.get('/jsonToMongo', jsonToCsv, csvToMongo, (req, res) => {
-// 	res.locals.data.subscribe();
-// 	res.sendStatus(200);
-// });
+app.get('/jsonToMongo', jsonToCsv, csvToMongo, (req, res) => {
+	res.locals.data.subscribe();
+	res.sendStatus(200);
+});
 
 app.get('/csvToPg', chooseMockFilePg, csvToPg, (req, res) => {
 	res.locals.data.subscribe();
@@ -182,7 +182,7 @@ app.get('/test', (req, res) => {
 		.combine()
 		.addEmailNotification(email)
 		.addTextNotification(text)
-		.addSchedule('10 * * * * *')
+		.addSchedule('5 * * * * *')
 		.next(test2)
 		.start()
 
