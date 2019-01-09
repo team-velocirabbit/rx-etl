@@ -13,7 +13,6 @@ const client = require('twilio')(
   process.env.TWILIO_AUTH_TOKEN,
 );
 
-
 /**
  * Class that stores the extractor, transformers, and loader, 
  * and combines and executes the ETL process through streaming, using rxjs Observables
