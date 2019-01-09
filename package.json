@@ -1,7 +1,7 @@
 {
-  "name": "rxjs-etl-test",
-  "version": "0.0.0-development",
-  "description": "",
+  "name": "rxjs-etl",
+  "version": "0.0.1",
+  "description": "ETL tool using RxJs Observables",
   "main": "Etl.js",
   "scripts": {
     "commit": "git-cz",
@@ -9,7 +9,7 @@
     "test": "mocha ./tests",
     "semantic-release": "semantic-release"
   },
-  "author": "",
+  "author": "team-velocirabbit",
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "6.3.1",
@@ -54,5 +54,17 @@
   },
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [
+    "etl",
+    "node",
+    "rxjs"
+  ],
+  "bugs": {
+    "url": "https://github.com/team-velocirabbit/rx-etl/issues"
+  },
+  "homepage": "https://github.com/team-velocirabbit/rx-etl#readme"
 }

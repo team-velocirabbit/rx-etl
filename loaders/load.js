@@ -19,7 +19,7 @@ const load = {};
 load.toCSV = (data, filePath, fileName, initialWrite) => {
   // Check if data parameter is empty
   if (data.length === 0) throw new Error('No data was passed into the load method! \n');
-    // Check if the file extension is CSV
+  // Check if the file extension is CSV
   if (fileExtension(fileName).toLowerCase() !== 'csv') throw new Error('File does not appear to be CSV.\n');
   const outputFile = filePath + '/' + fileName;
   const writer = csvWriter();

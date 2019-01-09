@@ -36,13 +36,16 @@ class Etl {
 		this.initialWrite = 0;
 		this.schedule = [];
 		this.cronList = [];
+		this.text = null;
+		this.email = null;
+		this.nextJob = null;
 	}
 
 	/**
 	 * Collects extractor$ and adds it in Etl's state
 	 * 
 	 * @param {Observable} extractorFunction - extract function that streams data from input source
-	 * @param {string} connectStrOrFilePath - file path of the extract file OR collection name of db
+	 * @param {string} connectStrOrFilePath - file path of the extract file OR connection string of db
 	 * @returns {this}
 	 */
 	addExtractors(extractorFunction, connectStrOrFilePath, collection) {
@@ -184,6 +187,7 @@ class Etl {
 	 * @returns {this}
 	 */
 	start(startNow = true) {
+		console.log('I started !');
 		if (typeof startNow !== 'boolean') {
 			throw new Error("invalid arg to .start() method! Please make sure arg is type 'boolean'!\n");
 		}
@@ -203,7 +207,35 @@ class Etl {
 						this.observable$.subscribe(	
 							null, 
 							(err) => { throw new Error('unable to start etl process.\n', err) },
-							null
+							() => {
+								// send text and/or email if specified
+								if (this.text !== null) {
+									const message = this.text;
+									client.messages.create({
+										from: process.env.TWILIO_PHONE_NUMBER,
+										to: message.to,
+										body: message.body,
+									});
+								}
+								if (this.email !== null) {
+									sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
+									const message = this.email;
+									const msg = {
+										to: message.to,
+										from: message.from,
+										subject: message.subject,
+										text: message.text,
+										html: message.html,
+									};
+									sgEmail.send(msg);
+								}
+								// start the next job on completion of current job
+								if (this.nextJob) {
+									const { job, startNow } = this.nextJob;
+									job.start(startNow);
+								}
+								return;
+							}
 						);
 					}
 				);
@@ -215,7 +247,43 @@ class Etl {
 			this.observable$.subscribe(	
 				null, 
 				(err) => { throw new Error('unable to start etl process.\n', err) },
-				null
+				() => {
+					// reset initialWrite so that it overwrites file
+					this.initialWrite = 0;
+					this.observable$.subscribe(	
+						null, 
+						(err) => { throw new Error('unable to start etl process.\n', err) },
+						() => {
+							// send text and/or email if specified
+							if (this.text !== null) {
+								const message = this.text;
+								client.messages.create({
+									from: process.env.TWILIO_PHONE_NUMBER,
+									to: message.to,
+									body: message.body,
+								});
+							}
+							if (this.email !== null) {
+								sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
+								const message = this.email;
+								const msg = {
+									to: message.to,
+									from: message.from,
+									subject: message.subject,
+									text: message.text,
+									html: message.html,
+								};
+								sgEmail.send(msg);
+							}
+							// start the next job on completion of current job
+							if (this.nextJob) {
+								const { job, startNow } = this.nextJob;
+								job.start(startNow);
+							}
+							return;
+						}
+					);
+				}
 			);
 		}
 		return this;
@@ -239,6 +307,7 @@ class Etl {
 		this.initialWrite = 0;
 		this.schedule = [];
 		this.cronList = [];
+		this.nextJob = null;
 		return this;
 	}
 
@@ -300,36 +369,24 @@ class Etl {
 	}
 
   /**
-	 * Method for sending SendGrid email notifications upon job completion
+	 * Method for storing SendGrid email notifications to send upon job completion
 	 *
 	 * @param {object} message - object containing the necessary info for sending a SendGrid email notification
 	 * @returns {this}
 	 */
   addEmailNotification(message) {
-    sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
-    const msg = {
-      to: message.to,
-      from: message.from,
-      subject: message.subject,
-      text: message.text,
-      html: message.html,
-    };
-    sgEmail.send(msg);
+		this.email = message;
     return this;
   }
 
   /**
-   * Method for sending Twilio text notifications upon job completion
+   * Method for storing Twilio text notification to send upon job completion
    *
    * @param {object} message - object containing the necessary info for sending a Twilio text notification
    * @returns {this}
    */
   addTextNotification(message) {
-    client.messages.create({
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: message.to,
-      body: message.body,
-    });
+		this.text = message;
     return this;
 	}
 	
@@ -350,8 +407,17 @@ class Etl {
 		}
 		return this;
 	}
-	test() {
-		console.log('npm test');
+
+	/**
+	 * Queue up next job to execute after current job
+	 * 
+	 * @param {object} job - Etl object containing the next job to execute
+	 * @param {boolean} startNow - indicates whether next job starts immediately
+	 * @returns {this}
+	 */
+	next(job, startNow = true, ) {
+		this.nextJob = { 'job': job, 'startNow': startNow };
+		return this;
 	}
 }
 
