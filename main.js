@@ -184,7 +184,26 @@ app.get('/test', (req, res) => {
 		.addTextNotification(text)
 		.addSchedule('10 * * * * *')
 		.next(test2)
-		.start(false)
+		.start()
+
+
+
+		// Testing fromMongo => toXML test
+		// new testEtl()
+	  // // .addExtractors(extract.fromCSV, '/Users/tkachler/Development/team-velocirabbit/rx-etl-1/MOCK_DATA.csv')
+		// .addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		// .addTransformers(combineNames)
+		// .addLoaders(load.toXML, fileName, filePath)
+		// // .addLoaders(load.toMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
+		// .combine()																										
+		// .start()
+
+
+
+	// const etl = new testEtl()
+	// 	.simple('MOCK_DATA.csv', [combineNames], __dirname, 'pleasework.csv')
+	// 	.combine()
+	// 	.start()
 
 	res.sendStatus(200);
 });
