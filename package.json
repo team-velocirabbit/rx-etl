@@ -42,10 +42,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kachler/rx-etl-1.git"
+    "url": "https://github.com/team-velocirabbit/rx-etl.git"
   },
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
+  },
+  "release": {
+    "branch": "staging"
   },
   "directories": {
     "test": "tests"
