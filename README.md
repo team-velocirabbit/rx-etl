@@ -1,6 +1,6 @@
 # RxJS-ETL
 
-RxJS-ETL is a modular platform utilizing RxJS observables to give developers the tools to build stream-based ETL (extract, transform, load) pipelines complete with buffering, bulk-insertions, notifications and task dependancies.
+RxJS-ETL is a modular platform utilizing RxJS observables to give developers the tools to build stream-based ETL (extract, transform, load) pipelines complete with buffering, bulk-insertions, notifications, and task dependencies.
 
 ##### Badges
 
