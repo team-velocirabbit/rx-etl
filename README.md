@@ -1,6 +1,6 @@
-# RXJS-ETL
+# RxJS-ETL
 
-RXJS-ETL is an NPM module for ETL that utilizes RxJS observables.
+RxJS-ETL is a modular platform utilizing RxJS observables to give developers the tools to build stream-based ETL (extract, transform, load) pipelines complete with buffering, bulk-insertions, notifications and task dependancies.
 
 ##### Badges
 
@@ -24,5 +24,23 @@ npm install rxjs-etl
 ```
 
 ## Usage
+Require the RxJS-ETL library in the desired file to make is accessible
 
+```
+const Etl = require('rxjs-etl');
+```
+
+Sample configuration .csv -> mongodb
+```
+	const task1 = new Etl()
+		.addExtractors(extract.fromCSV, 'SAMPLE_DATA.csv')
+		.addTransformers(transformFunction)
+		.addLoaders(load.toMongoDB, mongoURI, collectionName)
+		.combine()
+		.addEmailNotification(email)
+		.addTextNotification(text)
+		.addSchedule('0 * * * * *')
+		.next(task2)
+		.start()
+ ```
 ## Extract
