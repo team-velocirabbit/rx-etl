@@ -41,9 +41,9 @@ class Etl {
 
   /**
   * Collects extractor$ and adds it in Etl's state
-  * @param {Observable} extractorFunction - extract function that streams data from input source
-  * @param {string} connectStrOrFilePath - file path of the extract file
-  * OR connection string of db
+  * 
+  * @param {Observable} extractorFunction - extract function streaming data from input source
+  * @param {string} connectStrOrFilePath - file path or connection string
   * @returns {this}
   */
   addExtractors(extractorFunction, connectStrOrFilePath, collection) {
@@ -56,7 +56,6 @@ class Etl {
       this.reset();
       throw new Error('please make sure extract function matches file type! \n');
     }
-
     // retrieve extractor observable from connectStrOrFilePath
     let extractor$ = extractorFunction(connectStrOrFilePath, collection);
     // buffer the observable to collect 1000 at a time
@@ -73,6 +72,7 @@ class Etl {
 
   /**
   * Collects transformer(s) and stores it in Etl's state
+  * 
   * @param {array} transformers - array of functions that transform the source data
   * @returns {this}
   */
@@ -92,9 +92,10 @@ class Etl {
   /**
    * Collects loader function, collection name (if db) or file name (if flatfile), 
    * connection string (if db) or file path (if flatfile) and stores it in the Etl's state 
+   * 
    * @param {function} loader - function that loads data to an output source
-   * @param {string} collectionNameOrFileName - collection name of load db OR file name of output
-   * @param {string} connectStrOrFilePath - connect string to load db OR file path of output file
+   * @param {string} collectionNameOrFileName - collection name or file name
+   * @param {string} connectStrOrFilePath - connection string or file path
    * @returns {this}
    */
   addLoaders(loader, collectionNameOrFileName, connectStrOrFilePath) {
@@ -125,7 +126,6 @@ class Etl {
       throw new Error('flatfile loaders must provide valid output file path and/or file name!\n');
     } else if (type === 'csv' || type === 'xml' || type === 'json') {
       // make sure appropriate output file was provided
-      // if given one (and not the default 'etl_output')
       if (collectionNameOrFileName && (collectionNameOrFileName !== 'etl_output')) {
         if (type === 'csv' && fileExtension(collectionNameOrFileName).toLowerCase() !== 'csv') {
           throw new Error("loading to csv requires output file to be of type '.csv'!\n");
@@ -147,8 +147,9 @@ class Etl {
   }
 
   /**
-   * Combines the extractor$, transformers, and loader in the state by piping each to one another
-   * and stores an Observable (containing the entire ETL process) in the state 
+   * Combines the extractor$, transformers, and loader in the state by piping each to one 
+   * another and stores an Observable (containing the entire ETL process) in the state 
+   * 
    * @returns {this}
    */
   combine() {
@@ -180,12 +181,11 @@ class Etl {
 
   /**
    * Subscribes to the Observable stored in Etl's state that encapsulates the entire Etl process
-   * @param {boolean} startNow - value that indicates whether user
-   * wants job started right away or not
+   * 
+   * @param {boolean} startNow - indicates if job is to be run when process starts
    * @returns {this}
    */
   start(startNow = true) {
-    console.log('I started !');
     if (typeof startNow !== 'boolean') {
       throw new Error("invalid arg to .start() method! Please make sure arg is type 'boolean'!\n");
     }
@@ -195,8 +195,15 @@ class Etl {
     }
     // check if a schedule has been designated for job
     if (this.cronList.length !== 0) {
-      // schedule job and store scheduled job in Etl's state, 
-      // so that it's accessible to cancel/modify
+      // initial start if specified
+      if (startNow) {
+        this.observable$.subscribe(
+          null,
+          (err) => { throw new Error('unable to start etl process.\n', err) },
+          () => onComplete(this.text, this.email, this.nextJob),
+        );
+      }
+      // schedule job and store scheduled job in Etl's state
       this.cronList.forEach((cron) => {
         const job = scheduler.scheduleJob(
           cron, () => {      	
@@ -205,35 +212,7 @@ class Etl {
             this.observable$.subscribe(	
               null,
               (err) => { throw new Error('unable to start etl process.\n', err); },
-              () => {
-                // send text and/or email if specified
-                if (this.text !== null) {
-                  const message = this.text;
-                  client.messages.create({
-                    from: process.env.TWILIO_PHONE_NUMBER,
-                    to: message.to,
-                    body: message.body,
-                  });
-                }
-                if (this.email !== null) {
-                  sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
-                  const message = this.email;
-                  const msg = {
-                    to: message.to,
-                    from: message.from,
-                    subject: message.subject,
-                    text: message.text,
-                    html: message.html,
-                  };
-                  sgEmail.send(msg);
-                }
-                // start the next job on completion of current job
-                if (this.nextJob) {
-                  const { job, startNow } = this.nextJob;
-                  job.start(startNow);
-                }
-                return;
-              },
+              () => onComplete(this.text, this.email, this.nextJob),
             );
           },
         );
@@ -241,7 +220,7 @@ class Etl {
       });
     }
     // start job by default unless user specifies otherwise
-    if ((startNow && this.cronList.length !== 0) || this.cronList.length === 0) {
+    else {
       this.observable$.subscribe(
         null,
         (err) => { throw new Error('unable to start etl process.\n', err); },
@@ -251,35 +230,7 @@ class Etl {
           this.observable$.subscribe(
             null,
             (err) => { throw new Error('unable to start etl process.\n', err); },
-            () => {
-              // send text and/or email if specified
-              if (this.text !== null) {
-                const message = this.text;
-                client.messages.create({
-                  from: process.env.TWILIO_PHONE_NUMBER,
-                  to: message.to,
-                  body: message.body,
-                });
-              }
-              if (this.email !== null) {
-                sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
-                const message = this.email;
-                const msg = {
-                  to: message.to,
-                  from: message.from,
-                  subject: message.subject,
-                  text: message.text,
-                  html: message.html,
-                };
-                sgEmail.send(msg);
-              }
-              // start the next job on completion of current job
-              if (this.nextJob) {
-                const { job, startNow } = this.nextJob;
-                job.start(startNow);
-              }
-              return;
-            },
+            () => onComplete(this.text, this.email, this.nextJob),
           );
         },
       );
@@ -289,6 +240,7 @@ class Etl {
 
   /**
    * Resets Etl's state to default values
+   * 
    * @returns {this}
    */
   reset() {
@@ -310,13 +262,13 @@ class Etl {
 
   /**
    * Simple method that encapsulates the three different methods
-   *  to add extractor$ transformers, and loader
-   * into a simple function that adds appropriate functions and methods to Etl's state
+   * to add extractor$ transformers, and loader into a simple function 
+   * that adds appropriate functions and methods to Etl's state
+   * 
    * @param {string} extractString - name of file to extract from
    * @param {function} callback - array of transform functions
-   * @param {string} connectStrOrFilePath - connect string of load db OR file path o   output file
-   * @param {string} collectionNameOrFileName - collection name of load db 
-   * OR fil   name of output file
+   * @param {string} connectStrOrFilePath - connection string or file path
+   * @param {string} collectionNameOrFileName - collection name or file name
    * @returns {this}
    */
   simple(extractString, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
@@ -364,8 +316,8 @@ class Etl {
 
   /**
    * Method for storing SendGrid email notifications to send upon job completion
-   * @param {object} message - object containing the necessary info
-   * for sending a SendGrid emai     notification
+   * 
+   * @param {object} message - contains information to send email
    * @returns {this}
    */
   addEmailNotification(message) {
@@ -376,7 +328,7 @@ class Etl {
   /**
    * Method for storing Twilio text notification to send upon job completion
    *
-   * @param {object} message - object containing the necessary info for sending a Twilio text notification
+   * @param {object} message - contains information to send text
    * @returns {this}
    */
   addTextNotification(message) {
@@ -386,7 +338,8 @@ class Etl {
 
   /**
    * Aggregate schedules for job in an array in Etl's state
-   * @param {string} cron - schedule in cron-format used to add schedule for job
+   * 
+   * @param {string} cron - schedule in cron-format to schedule job
    * @returns {this}
    */
   addSchedule(...cron) {
@@ -403,7 +356,8 @@ class Etl {
 
   /**
    * Queue up next job to execute after current job
-   * @param {object} job - Etl object containing the next job to execute
+   * 
+   * @param {object} job - Etl object containing next job to run
    * @param {boolean} startNow - indicates whether next job starts immediately
    * @returns {this}
    */
@@ -411,6 +365,43 @@ class Etl {
     this.nextJob = { job, startNow };
     return this;
   }
+}
+
+/**
+ * Helper method to send notifications and start next job
+ * upon current job's completion
+ * 
+ * @param {object} text - contains information to send text
+ * @param {object} email - contains information to send email
+ * @param {object} nextJob - Etl object containing next job to run
+ * @returns {this}
+ */
+function onComplete(text, email, nextJob) {
+   // send text and/or email if specified
+   if (text !== null) {
+    client.messages.create({
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: text.to,
+      body: text.body,
+    });
+  }
+  if (email !== null) {
+    sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
+    const msg = {
+      to: email.to,
+      from: email.from,
+      subject: email.subject,
+      text: email.text,
+      html: email.html,
+    };
+    sgEmail.send(msg);
+  }
+  // start the next job on completion of current job
+  if (nextJob) {
+    const { job, startNow } = nextJob;
+    job.start(startNow);
+  }
+  return;
 }
 
 

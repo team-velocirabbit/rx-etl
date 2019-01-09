@@ -9,6 +9,7 @@ const load = {};
 
 /**
  * Exports transformed data locally to a CSV file
+ * 
  * @param {object} data - array of rows to export to file/db
  * @param {string} filePath - file path for the exported CSV file
  * @param {string} fileName - file path and name for the exported CSV file
@@ -28,11 +29,11 @@ load.toCSV = (data, filePath, fileName, initialWrite) => {
     if (err) throw new Error('there was an error writing data to output CSV file! \n');
   }));
   writer.end();
-  // return;
 };
 
 /**
  * Exports transformed data locally to a JSON file
+ * 
  * @param {array} data - array of objects containing the data to be exported
  * @param {string} filePath - file path for the exported JSON file
  * @param {string} fileName - file name for the exported JSON file
@@ -51,7 +52,6 @@ load.toJSON = (data, filePath, fileName, initialWrite) => {
   else fs.appendFile(outputFile, JSON.stringify(data, null, '\t'), (err) => {
     if (err) throw new Error('There was an issue writing data to the JSON file. ', err);
   });
-  // return;
 };
 
 /**
@@ -76,11 +76,11 @@ load.toXML = (data, filePath, fileName, initialWrite) => {
   else fs.appendFile(outputFile, xmlData, (err) => {
     if (err) throw new Error('There was an issue writing data to the XML file. ', err);
   });
-  // return;
 };
 
 /**
  * Exports transformed data to a Mongo database
+ * 
  * @param {array} data - array of objects containing the data to be exported
  * @param {string} connectionString - connection string to the Mongo database
  * @param {string} collectionName - name of the desired collection
@@ -98,11 +98,11 @@ load.toMongoDB = (data, connectionString, collectionName) => {
     // bulk insert to database
     bulk.execute();
   });
-  // return;
 };
 
 /**
  * Exports transformed data to a Postgres database
+ * 
  * @param {array} data - array of objects containing the data to be exported
  * @return
  */

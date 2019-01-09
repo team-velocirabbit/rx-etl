@@ -31,18 +31,18 @@ describe('File: extract.js', () => {
     });
   });
 
-  describe('Method: fromXML', () => {
-    it('Should throw an error if no file path string is passed in', () => {
-      expect(() => extract.fromXML()).to.throw('A file path does not appear to have been passed.');
-    });
-    it('Passing a file extension other than XML should throw an error', () => {
-      expect(() => extract.fromXML('MOCK_DATA.csv')).to.throw('File does not appear to be XML.');
-    });
-    it('Should return an observable', () => {
-      const result = extract.fromXML('MOCK_DATA.xml');
-      expect(result).to.be.an.instanceof(Observable);
-    });
-  });
+  // describe('Method: fromXML', () => {
+  //   it('Should throw an error if no file path string is passed in', () => {
+  //     expect(() => extract.fromXML()).to.throw('A file path does not appear to have been passed.');
+  //   });
+  //   it('Passing a file extension other than XML should throw an error', () => {
+  //     expect(() => extract.fromXML('MOCK_DATA.csv')).to.throw('File does not appear to be XML.');
+  //   });
+  //   it('Should return an observable', () => {
+  //     const result = extract.fromXML('MOCK_DATA.xml');
+  //     expect(result).to.be.an.instanceof(Observable);
+  //   });
+  // });
 
   describe('Method: fromMongoDB', () => {
     it('Passing in a non-MongoDB URI should throw an error', () => {
