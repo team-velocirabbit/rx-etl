@@ -4,8 +4,10 @@
   "description": "ETL tool using RxJs Observables",
   "main": "Etl.js",
   "scripts": {
+    "commit": "git-cz",
     "start": "nodemon main.js",
-    "test": "mocha ./tests"
+    "test": "mocha ./tests",
+    "semantic-release": "semantic-release"
   },
   "author": "team-velocirabbit",
   "license": "ISC",
@@ -41,14 +43,20 @@
   },
   "devDependencies": {
     "chai": "4.2.0",
-    "mocha": "5.2.0"
-  },
-  "directories": {
-    "test": "tests"
+    "commitizen": "3.0.5",
+    "cz-conventional-changelog": "2.1.0",
+    "mocha": "5.2.0",
+    "semantic-release": "^15.13.2"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/team-velocirabbit/rx-etl.git"
+    "url": "https://github.com/kachler/rx-etl-1.git"
+  },
+  "czConfig": {
+    "path": "node_modules/cz-conventional-changelog"
+  },
+  "directories": {
+    "test": "tests"
   },
   "keywords": [
     "etl",
