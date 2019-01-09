@@ -3,8 +3,8 @@ const fs = require('file-system');
 const fileExtension = require('file-extension');
 const csvWriter = require('csv-write-stream');
 const js2xmlparser = require("js2xmlparser");
-const path = require('path');
 
+// An object containing all the load methods
 const load = {};
 
 /**
@@ -108,12 +108,9 @@ load.toMongoDB = (data, connectionString, collectionName) => {
  * Exports transformed data to a Postgres database
  * 
  * @param {array} data - array of objects containing the data to be exported
- * @param {string}
- * @param {string}
  * @return
  */
-load.toPostgres = (data) => {
-  // Insert code here
-};
+// load.toPostgres = (data) => {
+// };
 
 module.exports = load;

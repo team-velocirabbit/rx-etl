@@ -5,7 +5,6 @@ const connectionString = require('connection-string');
 const { MongoClient } = require('mongodb');
 const { invert } = require('underscore');
 const scheduler = require('node-schedule');
-const path = require('path');
 const extract = require('./extractors/extract');
 const load = require('./loaders/load');
 require('dotenv').config()
@@ -187,7 +186,6 @@ class Etl {
 	 * @returns {this}
 	 */
 	start(startNow = true) {
-		console.log('I started !');
 		if (typeof startNow !== 'boolean') {
 			throw new Error("invalid arg to .start() method! Please make sure arg is type 'boolean'!\n");
 		}
@@ -197,46 +195,29 @@ class Etl {
 		}
 		// check if a schedule has been designated for job
 		if (this.cronList.length !== 0) {
+			console.log('scheduling job...')
+			// start job immediately if specified to do so
+			if (startNow) {
+				this.observable$.subscribe(
+					null,
+					(err) => { throw new Error('unable to start etl process.\n', err) },
+					() => onComplete(null, null, this.nextJob)
+				);
+			}
 			// schedule job and store scheduled job in Etl's state, so that it's accessible to cancel/modify
 			this.cronList.forEach(cron => {
 				const job = scheduler.scheduleJob(
 					cron, 
 					() => {
+						console.log('executing...')
 						// reset initialWrite so that it overwrites file
 						this.initialWrite = 0;
 						this.observable$.subscribe(	
 							null, 
 							(err) => { throw new Error('unable to start etl process.\n', err) },
-							() => {
-								// send text and/or email if specified
-								if (this.text !== null) {
-									const message = this.text;
-									client.messages.create({
-										from: process.env.TWILIO_PHONE_NUMBER,
-										to: message.to,
-										body: message.body,
-									});
-								}
-								if (this.email !== null) {
-									sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
-									const message = this.email;
-									const msg = {
-										to: message.to,
-										from: message.from,
-										subject: message.subject,
-										text: message.text,
-										html: message.html,
-									};
-									sgEmail.send(msg);
-								}
-								// start the next job on completion of current job
-								if (this.nextJob) {
-									const { job, startNow } = this.nextJob;
-									job.start(startNow);
-								}
-								return;
-							}
+							() => onComplete(this.text, this.email, this.nextJob)
 						);
+						return;
 					}
 				);
 				// keep track of scheduled job so it can be modified (i.e. cancel)
@@ -244,7 +225,7 @@ class Etl {
 			});
 		}
 		// start job by default unless user specifies otherwise
-		if ((startNow && this.cronList.length !== 0) || this.cronList.length === 0) {
+		else {
 			this.observable$.subscribe(	
 				null, 
 				(err) => { throw new Error('unable to start etl process.\n', err) },
@@ -254,36 +235,9 @@ class Etl {
 					this.observable$.subscribe(	
 						null, 
 						(err) => { throw new Error('unable to start etl process.\n', err) },
-						() => {
-							// send text and/or email if specified
-							if (this.text !== null) {
-								const message = this.text;
-								client.messages.create({
-									from: process.env.TWILIO_PHONE_NUMBER,
-									to: message.to,
-									body: message.body,
-								});
-							}
-							if (this.email !== null) {
-								sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
-								const message = this.email;
-								const msg = {
-									to: message.to,
-									from: message.from,
-									subject: message.subject,
-									text: message.text,
-									html: message.html,
-								};
-								sgEmail.send(msg);
-							}
-							// start the next job on completion of current job
-							if (this.nextJob) {
-								const { job, startNow } = this.nextJob;
-								job.start(startNow);
-							}
-							return;
-						}
+						() => onComplete(this.text, this.email, this.nextJob)
 					);
+					return;
 				}
 			);
 		}
@@ -417,11 +371,48 @@ class Etl {
 	 * @returns {this}
 	 */
 	next(job, startNow = true) {
-		if (job.cronList.length !== 0) throw new Error('second job cannot be scheduled.', 
-			'All queued jobs depend on schedule of first job. Please remove schedule on second job and try again!\n');
+		if (job.cronList.length !== 0) 
+			throw new Error('second job cannot be scheduled. ' 
+				+ 'All queued jobs depend on schedule of first job. Please remove schedule on second job and try again!\n');
 		this.nextJob = { 'job': job, 'startNow': startNow };
 		return this;
 	}
+}
+
+/**
+ * Helper method to execute once job is complete
+ * 
+ * @param {object} text - contains information needed to send text message
+ * @param {object} email - contains information needed to send email
+ * @param {object} nextJob - Etl object containing the next job to execute 
+ * @return
+ */
+const onComplete = (text, email, nextJob) => {
+	// send text and/or email if specified
+	if (text !== null) {
+		client.messages.create({
+			from: process.env.TWILIO_PHONE_NUMBER,
+			to: text.to,
+			body: text.body,
+		});
+	}
+	if (email !== null) {
+		sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
+		const msg = {
+			to: email.to,
+			from: email.from,
+			subject: email.subject,
+			text: email.text,
+			html: email.html,
+		};
+		sgEmail.send(msg);
+	}
+	// start the next job on completion of current job
+	if (nextJob) {
+		const { job, startNow } = nextJob;
+		job.start(startNow);
+	}
+	return;
 }
 
 module.exports = Etl;
