@@ -26,3 +26,5 @@ npm install rxjs-etl
 ## Usage
 
 ## Extract
+
+## Load
