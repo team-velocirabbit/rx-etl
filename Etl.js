@@ -20,26 +20,26 @@ const client = require('twilio')(
  * and combines and executes the ETL process through streaming, using rxjs Observables
  * */
 class Etl {
-	/**
-	 * initiates and stores initial values of state that stores all contents of ETL
-	 */
-	constructor() {
-		this.extractor$ = null;
-		this.transformers = [];
-		this.loader = null;
-		this.observable$ = null;
-		this.connectionString = '';
-		this.collectionName = '';
-		this.outputFilePath = '';
-		this.outputFileName = '';
-		this.type = '';
-		this.initialWrite = 0;
-		this.schedule = [];
-		this.cronList = [];
-		this.text = null;
-		this.email = null;
-		this.nextJob = null;
-	}
+  /**
+   * initiates and stores initial values of state that stores all contents of ETL
+   */
+  constructor() {
+    this.extractor$ = null;
+    this.transformers = [];
+    this.loader = null;
+    this.observable$ = null;
+    this.connectionString = '';
+    this.collectionName = '';
+    this.outputFilePath = '';
+    this.outputFileName = '';
+    this.type = '';
+    this.initialWrite = 0;
+    this.schedule = [];
+    this.cronList = [];
+    this.text = null;
+    this.email = null;
+    this.nextJob = null;
+  }
 
 	/**
 	 * Collects extractor$ and adds it in Etl's state
