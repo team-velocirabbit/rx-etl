@@ -350,9 +350,8 @@ class Etl {
 		}
 		return this;
 	}
-
 	test() {
-		//Do something
+		console.log('npm test');
 	}
 }
 
