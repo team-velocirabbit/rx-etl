@@ -86,14 +86,17 @@ describe('File: Etl.js', () => {
     it('Should throw error if parameters of method are not provided or invalid', () => {
       expect(() => testEtl.simple())
         .to.throw('first parameter of simple() must be a string and cannot be empty!');
-      expect(() => testEtl.simple('test', [], 'connectStr', 1))
-        .to.throw('fourth parameter of simple() must be a string!');
-      expect(() => testEtl.simple('test', [], 1))
-        .to.throw('third parameter of simple() must be a string and cannot be empty!');
+      expect(() => testEtl.simple('test', null, [], 1, 1))
+        .to.throw('fourth parameter of simple() must be a string and cannot be empty!');
+      expect(() => testEtl.simple('test', 'test', 1, 'test', 1))
+        .to.throw('third parameter of simple() must be an array and cannot be empty!' 
+        + ' Insert function into array and pass in.');
       expect(() => testEtl.simple('test', 1, 'connectStr'))
-        .to.throw('second parameter of simple() must be a function and cannot be empty!');
+        .to.throw('second parameter of simple() must be a string and cannot be empty! Assign to "null" if not needed.');
       expect(() => testEtl.simple(1, () => 1, 'connectStr'))
         .to.throw('first parameter of simple() must be a string and cannot be empty!');
+      expect(() => testEtl.simple('test', 'test', [() => 1], 'test', 1))
+        .to.throw('fifth parameter of simple() must be a string!')
     });
   });
 });

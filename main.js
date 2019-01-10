@@ -11,6 +11,11 @@ const express = require('express');
 const path = require('path');
 const fs = require('file-system');
 const etl = require('etl');
+const sgEmail = require('@sendgrid/mail');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN,
+);
 const mongodb = require('mongodb');
 const pg = require('pg');
 const copyFrom = require('pg-copy-streams').from;
@@ -167,6 +172,49 @@ app.get('/test', (req, res) => {
 		body: 'Your first job has finished',
 	}
 
+// 	let job = new testEtl()
+// 	.simple('MOCK_DATA_SHORT.csv', null, [function (data) {return data}], './', 'pleasework.csv')
+// 	.combine()
+
+// 	const emailCheck = true;
+// 	const textCheck = true;
+
+// if (emailCheck) job.addEmailNotification({
+// 	to: 'jaelee213@gmail.com',
+// 	from: 'rxjs-etl@gmail.com',
+// 	subject: 'Your job has been completed',
+// 	text: 'Your job has finished.',
+// 	html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+// });
+
+// if (textCheck) job.addTextNotification({
+// 	to: '6267278584',
+// 	body: 'Your job has finished.',
+// });
+
+// //subscribe manually
+// job.observable$.subscribe(
+// 	null,
+// 	(err) => event.sender.send('error', err),
+// 	() => {
+// 		console.log('done!!!!!')
+// 		if (emailCheck) {
+// 			sgEmail.setApiKey(process.env.SENDGRID_API_KEY);
+// 			sgEmail.send(job.email);
+// 		}
+// 		if (textCheck) {
+// 			client.messages.create({
+// 				from: process.env.TWILIO_PHONE_NUMBER,
+// 				to: job.text.to,
+// 				body: job.text.body,
+// 			});
+// 		}
+// 		// event.sender.send('done', 'success')
+// 	},
+// );
+
+
+
 	const test2 = new testEtl()
 		.addExtractors(extract.fromJSON, 'idontexist.json')
 		.addTransformers([combineNames])
@@ -185,8 +233,6 @@ app.get('/test', (req, res) => {
 		.addSchedule('5 * * * * *')
 		.next(test2)
 		.start()
-
-
 
 		// Testing fromMongo => toXML test
 		// new testEtl()
