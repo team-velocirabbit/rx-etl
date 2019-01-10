@@ -47,9 +47,6 @@
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
   },
-  "release": {
-    "branch": "staging"
-  },
   "directories": {
     "test": "tests"
   },
