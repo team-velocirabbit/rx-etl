@@ -265,26 +265,46 @@ class Etl {
    * to add extractor$ transformers, and loader into a simple function 
    * that adds appropriate functions and methods to Etl's state
    * 
-   * @param {string} extractString - name of file to extract from
-   * @param {function} callback - array of transform functions
-   * @param {string} connectStrOrFilePath - connection string or file path
-   * @param {string} collectionNameOrFileName - collection name or file name
+   * @param {string} extractString - name of source to extract from (db connection str or file path)
+   * @param {string} extractCollection - name of source collection/table to extract from
+   * @param {array} callback - array of transform functions
+   * @param {string} connectStrOrFilePath - connection string or file path to export to
+   * @param {string} collectionNameOrFileName - collection name or file name to export to
    * @returns {this}
    */
-  simple(extractString, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
-    if (extractString === undefined || typeof extractString !== 'string' || extractString.length === 0) throw new Error('first parameter of simple() must be a string and cannot be empty!');
-    if (callback === undefined || !(callback instanceof Array)) throw new Error('second parameter of simple() must be a function and cannot be empty!');
-    if (connectStrOrFilePath === undefined || typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) throw new Error('third parameter of simple() must be a string and cannot be empty!');
-    if (collectionNameOrFileName !== 'etl_output' && (typeof collectionNameOrFileName !== 'string' || collectionNameOrFileName.length === 0)) throw new Error('fourth parameter of simple() must be a string!');
+  simple(extractString, extractCollection, callback, connectStrOrFilePath, collectionNameOrFileName = 'etl_output') {
+    if (!extractString || typeof extractString !== 'string' || extractString.length === 0) {
+      throw new Error('first parameter of simple() must be a string and cannot be empty!');
+    }
+    if (extractCollection === undefined || (typeof extractCollection !== 'string' && extractCollection !== null) 
+      || (typeof extractCollection === 'string' && extractCollection.length === 0)) {
+      throw new Error('second parameter of simple() must be a string and cannot be empty! Assign to "null" if not needed.');
+    }
+    if (callback === undefined || !(callback instanceof Array)) {
+      throw new Error('third parameter of simple() must be an array and cannot be empty!' 
+      + ' Insert function into array and pass in.');
+    }
+    if (connectStrOrFilePath === undefined || typeof connectStrOrFilePath !== 'string' || connectStrOrFilePath.length === 0) {
+      throw new Error('fourth parameter of simple() must be a string and cannot be empty!');
+    } 
+    if (collectionNameOrFileName !== 'etl_output' && (typeof collectionNameOrFileName !== 'string' || collectionNameOrFileName.length === 0)) {
+      throw new Error('fifth parameter of simple() must be a string!');
+    } 
     // add valid callbacks to the list of transformers in state
     callback.forEach(cb => this.transformers.push(cb));
     /* EXTRACT: check extractString to choose appropriate extractor */
     if (fileExtension(extractString).toLowerCase() === 'csv') this.extractor$ = extract.fromCSV(extractString);
     if (fileExtension(extractString).toLowerCase() === 'json') this.extractor$ = extract.fromJSON(extractString);
     if (fileExtension(extractString).toLowerCase() === 'xml') this.extractor$ = extract.fromXML(extractString);
-    if (connectionString(connectStrOrFilePath).protocol === 'mongodb') this.extractor$ = extract.fromMongoDB(extractString, collectionNameOrFileName);
-    if (connectionString(connectStrOrFilePath).protocol === 'postgres') this.extractor$ = extract.fromPostgres(extractString, collectionNameOrFileName);
-    // buffer the observable to collect 99 at a time
+    if (connectionString(extractString).protocol && connectionString(extractString).protocol === 'mongodb') {
+      if (extractCollection === null) throw new Error('extracting from database requires collection name.');
+      this.extractor$ = extract.fromMongoDB(extractString, extractCollection);
+    }
+    if (connectionString(extractString).protocol && connectionString(extractString).protocol === 'postgres') {
+      if (extractCollection === null) throw new Error('extracting from database requires table name.');
+      this.extractor$ = extract.fromPostgres(extractString, collectionNameOrFileName);
+    }
+    // buffer the observable to collect 1000 at a time
     this.extractor$ = this.extractor$.pipe(bufferCount(1000, 1000));
     const type = invert(load)[loader].substring(2).toLowerCase();
     // make sure user specifies output filename to be able to add appropriate loader

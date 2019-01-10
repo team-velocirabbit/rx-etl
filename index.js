@@ -1,3 +1,5 @@
-export * from './Etl';
-export * from './extractors/extract';
-export * from './loaders/load';
+module.exports = {
+	Etl : require('./Etl'),
+	extract : require('./extractors/extract'),
+	load : require('./loaders/load'),
+}
