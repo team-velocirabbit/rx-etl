@@ -16,12 +16,15 @@ RxJS-ETL is a modular platform that employs RxJS observables, allowing developer
 [semantic-release-image]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
 [semantic-release-url]: https://github.com/semantic-release/semantic-release
 
+---
 
 ## Installation
 
 ```
 npm install rxjs-etl
 ```
+
+---
 
 ## Usage
 Require the RxJS-ETL library in the desired file to make it accessible.
@@ -44,6 +47,8 @@ Sample configuration .csv -> mongodb
 		.start()
  ```
 
+---
+
 ### Table of Contents
 * [Extract](#extract)
 * [Transform](#transform)
@@ -52,6 +57,8 @@ Sample configuration .csv -> mongodb
 * [Scheduling](#scheduling)
 * [Chaining](#chaining)
 * [Misc](#misc)
+
+---
 
 ### Extract
 #### addExtractors(extractorFunction, connectStrOrFilePath, collectionOrTableName)
@@ -220,6 +227,8 @@ Example
 ```js
 .next(task2)
 ```
+
+---
 
 ### Misc
 #### .combine()
