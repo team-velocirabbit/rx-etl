@@ -2,7 +2,7 @@
   "name": "rxjs-etl",
   "version": "0.0.1",
   "description": "ETL tool using RxJs Observables",
-  "main": "Etl.js",
+  "main": "index.js",
   "scripts": {
     "commit": "git-cz",
     "start": "node main.js",

@@ -1,6 +1,6 @@
 # RxJS-ETL
 
-RxJS-ETL is a modular platform utilizing RxJS observables to give developers the tools to build stream-based ETL (extract, transform, load) pipelines complete with buffering, bulk-insertions, notifications, and task dependencies.
+RxJS-ETL is a modular platform that employs RxJS observables, allowing developers to build stream-based ETL (Extract, Transform, Load) pipelines complete with buffering, bulk-insertions, notifications, and task dependencies.
 
 ##### Badges
 
@@ -24,7 +24,7 @@ npm install rxjs-etl
 ```
 
 ## Usage
-Require the RxJS-ETL library in the desired file to make is accessible
+Require the RxJS-ETL library in the desired file to make it accessible.
 
 ```js
 const {Etl, extract, load} = require('rxjs-etl');
@@ -55,11 +55,11 @@ Sample configuration .csv -> mongodb
 
 ### Extract
 #### addExtractors(extractorFunction, connectStrOrFilePath, collectionOrTableName)
-This method accepts one of the extractor helper methods as an argument and stores it to the Etl state. The second parameter is either the filepath or connection URI depending on the data source. The third paramenter is optional and consists of either the collection name or table name if extracting from a Mongo or Postgres database.
+This method accepts one of the extractor helper methods as an argument and stores it to the Etl state. The second parameter is either the file path or connection URI, depending on the data source. The third paramenter is optional and consists of either the collection name or table name if extracting from a Mongo or Postgres database.
 
 *The following helper methods are available for use with addExtractors:*
 ##### extract.fromCSV(filePath)
-This method imports a CSV file from the file system, parses data into JSON and wraps the data in an observable. The method takes a file path as it's parameter.
+This method imports a CSV file from the file system, parses data into JSON, and wraps the data in an observable. The method takes a file path as its parameter.
 
 Example
 ```js
@@ -67,7 +67,7 @@ Example
 ```
 
 ##### extract.fromJSON(filePath)
-This method imports a JSON file from the file system, and wraps the data in an observable. The method takes a file path as it's parameter.
+This method imports a JSON file from the file system and wraps the data in an observable. The method takes a file path as its parameter.
 
 Example
 ```js
@@ -75,7 +75,7 @@ Example
 ```
 
 ##### extract.fromXML(filePath)
-This method imports a XML file from the file system, parses data into JSON and wraps the data in an observable. The method takes a file path as it's parameter.
+This method imports an XML file from the file system, parses the data into JSON, and wraps it in an observable. The method takes a file path as its parameter.
 
 Example
 ```js
@@ -83,7 +83,7 @@ Example
 ```
 
 ##### extract.fromMongoDB(connectionString, collectionOrTableName)
-This method connects to a Mongo database, imports the data from the desired collection, parses data into JSON and wraps the data in an observable. The method takes a connection URI and collection name as it's parameters.
+This method connects to a Mongo database, imports the data from the desired collection, parses the data into JSON, and wraps it in an observable. The method takes a connection URI and collection name as its parameters.
 
 Example
 ```js
@@ -91,7 +91,7 @@ Example
 ```
 
 ##### extract.fromPostgres(connectionString, collectionOrTableName)
-This method connects to a Postgres database, imports the data from the desired table,parses data into JSON and wraps the data in an observable. The method takes a connection URI and table name as it's parameters.
+This method connects to a Postgres database, imports the data from the desired table, parses the data into JSON, and wraps it in an observable. The method takes a connection URI and table name as its parameters.
 
 Example
 ```js
@@ -102,17 +102,17 @@ Example
 
 ### Transform
 #### addTransformers(transformArray)
-This method accepts an array of function supplied to the users. The addTransformers method will apply each function to the data stream.
+This method accepts an array of function supplied by the users. The addTransformers method will apply each function to the data stream.
 
 ---
 
 ### Load
 #### addLoaders(loaderFunction, connectStrOrFilePath, collectionOrTableName)
-This method accepts one of the loader helper methods as an arguments and stores it to the Etl state. The second parameter is either the filepath or connection URI depending on the data target. The third paramenter is optional and consists of either the collection name or table name if loading to a Mongo or Postgres database.
+This method accepts one of the loader helper methods as an argument and stores it to the Etl state. The second parameter is either the file path or connection URI depending on the data target. The third parameter is optional and consists of either the collection name or table name if loading to a Mongo or Postgres database.
 
 *The following helper methods are available for use with addLoaders:*
 ##### load.toCSV(filePath)
-This method converts the transformed data to CSV an wrties the data to the file system. The method takes a file path (with file name included) as it's parameter.
+This method converts the transformed data to CSV and writes the data to the file system. The method takes a file path (with file name included) as its parameter.
 
 Example
 ```js
@@ -120,7 +120,7 @@ Example
 ```
 
 ##### load.toJSON(filePath)
-This method converts the transformed data to JSON an wrties the data to the file system. The method takes a file path (with file name included) as it's parameter.
+This method converts the transformed data to JSON and writes the data to the file system. The method takes a file path (with file name included) as its parameter.
 
 Example
 ```js
@@ -128,15 +128,15 @@ Example
 ```
 
 ##### load.toXML(filePath)
-This method converts the transformed data to XML an wrties the data to the file system. The method takes a file path (with file name included) as it's parameter.
+This method converts the transformed data to XML and writes the data to the file system. The method takes a file path (with file name included) as its parameter.
 
 Example
 ```js
 .addExtractors(extract.toXML, '~/EXAMPLE_DATA.xml')
 ```
 
-##### load.toMongoDB(data,connectionString, collectionOrTableName)
-This method connects to a Mongo database, converts the transformed data and streams it to the desired Mongo collection. The method takes the transformed data, a connection URI and collection name as it's parameters.
+##### load.toMongoDB(data, connectionString, collectionOrTableName)
+This method connects to a Mongo database, converts the transformed data, and streams it to the desired Mongo collection. The method takes the transformed data, a connection URI, and collection name as its parameters.
 
 Example
 ```js
@@ -144,7 +144,7 @@ Example
 ```
 
 ##### load.toPostgres(data,connectionString, collectionOrTableName)
-This method connects to a Postgres database, converts the transformed data and streams it to the desired Postgres table. The method takes the transformed data, a connection URI and collection name as it's parameters.
+This method connects to a Postgres database, converts the transformed data, and streams it to the desired Postgres table. The method takes the transformed data, a connection URI, and collection name as its parameters.
 
 Example
 ```js
@@ -155,7 +155,7 @@ Example
 
 ### Notifications
 #### addEmailNotification(email)
-This optional method allow users to receive an email notification upon successful completion of the ETL task. It take an object as an argument and show be formatted like this:
+This optional method allows users to receive an email notification upon successful completion of the ETL task. It takes an object as an argument and will be formatted like this:
 
 ```js	
 const emailMessage = {
@@ -173,7 +173,7 @@ Example
 ```
 
 #### addTextNotification(textMessage)
-This optional method allow users to receive an text notification upon successful completion of the ETL task. It take an object as an argument and show be formatted like this:
+This optional method allows users to receive a text notification upon successful completion of the ETL task. It takes an object as an argument and will be formatted like this:
 
 ```js	
 const textMessage = {
@@ -203,7 +203,7 @@ SENDGRID_API_KEY=
 
 ### Scheduling
 #### .addSchedule(cronString)
-This optional method allows users to schedule a task to be executed repeated using cron. It takes a cron string as a parameter.
+This optional method allows users to schedule a task to be executed repeatedly using cron. It takes a cron string as a parameter.
 
 Example
 ```js
@@ -223,9 +223,9 @@ Example
 
 ### Misc
 #### .combine()
-This method combines the extractor, transformers, and loader, piping each segment to one another and wrapping it in an observable. 
+This method combines the extractor, transformers, and loader, piping each segment to one another and wrapping everything in an observable. 
 
 #### .start()
-This method Subscribes to the task observable stored in Etl's state triggering the process to begin
+This method subscribes to the task observable stored in Etl's state, triggering the ETL process to begin.
 
 
