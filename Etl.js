@@ -306,21 +306,23 @@ class Etl {
     }
     // buffer the observable to collect 1000 at a time
     this.extractor$ = this.extractor$.pipe(bufferCount(1000, 1000));
-    const type = invert(load)[loader].substring(2).toLowerCase();
-    // make sure user specifies output filename to be able to add appropriate loader
-    if ((type === 'csv' || type === 'json' || type === 'xml') 
-      && fileExtension(collectionNameOrFileName).toLowerCase() === 'etl_output') {
-      throw new Error("please specify output file name ending in: '.csv', '.xml', '.json'!\n");
-    }
-    if ((type === 'mongodb' || type === 'postgres') 
-      && (connectionString(connectStrOrFilePath).protocol !== 'mongodb'
-      && connectionString(connectStrOrFilePath).protocol !== 'postgres')) {
-      throw new Error('please specify connection string if trying to connect to database!\n');
-    }
+  
     // LOAD: check input to load to appropriate output source
-    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'csv') this.loader = load.toCSV;
-    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'json') this.loader = load.toJSON;
-    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'xml') this.loader = load.toXML;
+    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'csv') {
+      this.loader = load.toCSV;
+      this.outputFileName = connectStrOrFilePath;
+      this.outputFilePath = collectionNameOrFileName;
+    }
+    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'json') {
+      this.loader = load.toJSON;
+      this.outputFileName = connectStrOrFilePath;
+      this.outputFilePath = collectionNameOrFileName;
+    }
+    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'xml') {
+      this.loader = load.toXML;
+      this.outputFileName = connectStrOrFilePath;
+      this.outputFilePath = collectionNameOrFileName;
+    }
     if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'postgres') {
       this.loader = load.toPostgres;
       this.connectionString = connectStrOrFilePath;
