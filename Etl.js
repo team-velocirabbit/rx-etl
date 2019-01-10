@@ -310,29 +310,30 @@ class Etl {
     // LOAD: check input to load to appropriate output source
     if (fileExtension(collectionNameOrFileName).toLowerCase() === 'csv') {
       this.loader = load.toCSV;
-      this.outputFileName = connectStrOrFilePath;
-      this.outputFilePath = collectionNameOrFileName;
-    }
-    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'json') {
+      this.outputFilePath = connectStrOrFilePath;
+      this.outputFileName = collectionNameOrFileName;
+      this.type = 'flatfile';
+    } else if (fileExtension(collectionNameOrFileName).toLowerCase() === 'json') {
       this.loader = load.toJSON;
-      this.outputFileName = connectStrOrFilePath;
-      this.outputFilePath = collectionNameOrFileName;
-    }
-    if (fileExtension(collectionNameOrFileName).toLowerCase() === 'xml') {
+      this.outputFilePath = connectStrOrFilePath;
+      this.outputFileName = collectionNameOrFileName;
+      this.type = 'flatfile';
+    } else if (fileExtension(collectionNameOrFileName).toLowerCase() === 'xml') {
       this.loader = load.toXML;
-      this.outputFileName = connectStrOrFilePath;
-      this.outputFilePath = collectionNameOrFileName;
-    }
-    if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'postgres') {
+      this.outputFilePath = connectStrOrFilePath;
+      this.outputFileName = collectionNameOrFileName;
+      this.type = 'flatfile';
+    } else if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'postgres') {
       this.loader = load.toPostgres;
       this.connectionString = connectStrOrFilePath;
       this.collectionName = collectionNameOrFileName;
-    }
-    if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'mongodb') {
+      this.type = 'db';
+    } else if (connectionString(connectStrOrFilePath).protocol && connectionString(connectStrOrFilePath).protocol === 'mongodb') {
       this.loader = load.toMongoDB;
       this.connectionString = connectStrOrFilePath;
       this.collectionName = collectionNameOrFileName;
-    }
+      this.type = 'db';
+    } else throw new Error('invalid load file name / collection name given. Please make sure to add the extension to the new file name.');
     return this;
   }
 
