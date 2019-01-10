@@ -24,7 +24,7 @@ npm install rxjs-etl
 ```
 
 ## Usage
-Require the RxJS-ETL library in the desired file to make is accessible
+Require the RxJS-ETL library in the desired file to make it accessible
 
 ```js
 const {Etl, extract, load} = require('rxjs-etl');
@@ -91,7 +91,7 @@ Example
 ```
 
 ##### extract.fromPostgres(connectionString, collectionOrTableName)
-This method connects to a Postgres database, imports the data from the desired table,parses data into JSON and wraps the data in an observable. The method takes a connection URI and table name as it's parameters.
+This method connects to a Postgres database, imports the data from the desired table, parses data into JSON and wraps the data in an observable. The method takes a connection URI and table name as it's parameters.
 
 Example
 ```js
@@ -102,7 +102,7 @@ Example
 
 ### Transform
 #### addTransformers(transformArray)
-This method accepts an array of function supplied to the users. The addTransformers method will apply each function to the data stream.
+This method accepts an array of function supplied by the users. The addTransformers method will apply each function to the data stream.
 
 ---
 
@@ -112,7 +112,7 @@ This method accepts one of the loader helper methods as an arguments and stores 
 
 *The following helper methods are available for use with addLoaders:*
 ##### load.toCSV(filePath)
-This method converts the transformed data to CSV an wrties the data to the file system. The method takes a file path (with file name included) as it's parameter.
+This method converts the transformed data to CSV and writes the data to the file system. The method takes a file path (with file name included) as it's parameter.
 
 Example
 ```js
@@ -120,7 +120,7 @@ Example
 ```
 
 ##### load.toJSON(filePath)
-This method converts the transformed data to JSON an wrties the data to the file system. The method takes a file path (with file name included) as it's parameter.
+This method converts the transformed data to JSON and writes the data to the file system. The method takes a file path (with file name included) as it's parameter.
 
 Example
 ```js
@@ -128,7 +128,7 @@ Example
 ```
 
 ##### load.toXML(filePath)
-This method converts the transformed data to XML an wrties the data to the file system. The method takes a file path (with file name included) as it's parameter.
+This method converts the transformed data to XML and writes the data to the file system. The method takes a file path (with file name included) as it's parameter.
 
 Example
 ```js
@@ -155,7 +155,7 @@ Example
 
 ### Notifications
 #### addEmailNotification(email)
-This optional method allow users to receive an email notification upon successful completion of the ETL task. It take an object as an argument and show be formatted like this:
+This optional method allows users to receive an email notification upon successful completion of the ETL task. It takes an object as an argument and will be formatted like this:
 
 ```js	
 const emailMessage = {
@@ -173,7 +173,7 @@ Example
 ```
 
 #### addTextNotification(textMessage)
-This optional method allow users to receive an text notification upon successful completion of the ETL task. It take an object as an argument and show be formatted like this:
+This optional method allows users to receive an text notification upon successful completion of the ETL task. It takes an object as an argument and will be formatted like this:
 
 ```js	
 const textMessage = {
@@ -203,7 +203,7 @@ SENDGRID_API_KEY=
 
 ### Scheduling
 #### .addSchedule(cronString)
-This optional method allows users to schedule a task to be executed repeated using cron. It takes a cron string as a parameter.
+This optional method allows users to schedule a task to be executed repeatedly using cron. It takes a cron string as a parameter.
 
 Example
 ```js
