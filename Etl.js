@@ -50,7 +50,7 @@ class Etl {
     // check to see that extract function matches file path extension
     const type = invert(extract)[extractorFunction].substring(4).toLowerCase();
     const fileExt = fileExtension(connectStrOrFilePath).toLowerCase();
-    const dbType = connectionString(connectStrOrFilePath);
+    const dbType = connectionString(connectStrOrFilePath).protocol;
     if (((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) 
       || ((type === 'mongodb' || type === 'postgres') && (type !== dbType))) {
       this.reset();

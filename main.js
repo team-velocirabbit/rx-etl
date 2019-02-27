@@ -18,7 +18,7 @@ const client = require('twilio')(
 );
 const mongodb = require('mongodb');
 const pg = require('pg');
-const copyFrom = require('pg-copy-streams').from;
+// const copyFrom = require('pg-copy-streams').from;
 let pgClient = new pg.Client('postgres://pssshksz:Wh0grf6b-steQ88Dl0EIqk06siRpayld@pellefant.db.elephantsql.com:5432/pssshksz?ssl=true')
 pgClient.connect();
 const MongoClient = mongodb.MongoClient;
@@ -215,23 +215,23 @@ app.get('/test', (req, res) => {
 
 
 
-	const test2 = new testEtl()
-		.addExtractors(extract.fromJSON, 'idontexist.json')
-		.addTransformers([combineNames])
-		.addLoaders(load.toXML, 'iexist.xml')
-		.combine()		
-		.addEmailNotification(emailMessage)
-		.addTextNotification(textMessage)
+	// const test2 = new testEtl()
+	// 	.addExtractors(extract.fromJSON, 'idontexist.json')
+	// 	.addTransformers([combineNames])
+	// 	.addLoaders(load.toXML, 'iexist.xml')
+	// 	.combine()		
+	// 	.addEmailNotification(emailMessage)
+	// 	.addTextNotification(textMessage)
 
 	const test1 = new testEtl()
-		.addExtractors(extract.fromCSV, 'MOCK_DATA_SHORT.csv')
+		.addExtractors(extract.fromMongoDB, 'mongodb://dbadmin:admin1234@ds157549.mlab.com:57549/npm-etl-test', 'pleasework')
 		.addTransformers([function (data) { return data }])
-		.addLoaders(load.toJSON, 'idontexist.json')
+		.addLoaders(load.toCSV, 'hi.csv')
 		.combine()
-		.addEmailNotification(email)
-		.addTextNotification(text)
-		.addSchedule('5 * * * * *')
-		.next(test2)
+		// .addEmailNotification(email)
+		// .addTextNotification(text)
+		// .addSchedule('5 * * * * *')
+		// .next(test2)
 		.start()
 
 		// Testing fromMongo => toXML test
