@@ -10,7 +10,7 @@
     "semantic-release": "semantic-release"
   },
   "author": "team-velocirabbit",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@sendgrid/mail": "6.3.1",
     "JSONStream": "1.3.5",
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kachler/rx-etl-1.git"
+    "url": "https://github.com/team-velocirabbit/rx-etl.git"
   },
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
