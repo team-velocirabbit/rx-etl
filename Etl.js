@@ -147,6 +147,7 @@ class Etl {
    * @returns {this}
    */
   start(startNow = true) {
+    validate.beforeStart(this, startNow);
     // check if a schedule has been designated for job
     if (this.cronList.length !== 0) {
       // initial start if specified
