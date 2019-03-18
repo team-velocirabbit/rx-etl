@@ -17,10 +17,10 @@ const validate = {};
  * @param {string} fileExt - string signifying csv/json/xml from file path
  */
 validate.extractorArgs = (etl, type, dbType, fileExt) => {
-	if (((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) 
-	  || ((type === 'mongodb' || type === 'postgres') && (type !== dbType))) {
-	  etl.reset();
-	  throw new Error('please make sure extract function matches file type! \n');
+  if (((type === 'csv' || type === 'xml' || type === 'json') && (type !== fileExt)) 
+    || ((type === 'mongodb' || type === 'postgres') && (type !== dbType))) {
+    etl.reset();
+    throw new Error('please make sure extract function matches file type! \n');
   }
 };
 
